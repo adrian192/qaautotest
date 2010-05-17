@@ -332,7 +332,7 @@ class Harness(object):
         test_status["run_flag"] = test_case_params[3]
         if len(test_case_params) > 4:
             try:
-                if test_case_params[4]:
+                if int(test_case_params[4]):
                     test_config["run_as_root"] = True
                 else:
                     test_config["run_as_root"] = False
@@ -341,6 +341,7 @@ class Harness(object):
                                "'%s'.  Expected '0' or '1'."
                                %(test_status["test_file"],
                                  test_status["test_class"], test_case_params[4]))
+                test_config["run_as_root"] = False
         
         #######################################################################
         # Various checks to go through before running the test.

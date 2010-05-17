@@ -49,6 +49,7 @@ class TestCaseDirectives(object):
                               "you are not root.  Running as UID %s."
                               %os.geteuid())
                return False
+        return True
     
 def get_options():
     parser = OptionParser()
