@@ -1,0 +1,81 @@
+#summary Run the sample tests provided with the test harness
+
+= Introduction =
+
+This page describes how to run the included sample test cases through the harness.
+
+== Requirements ==
+  * Linux host (tested with Ubuntu 10.04)
+  * Python 2.6 (tested with 2.6.5)
+  * A local copy of the source code.
+
+To run a test suite from the database the following additional requirements must be met:
+  * MySQL client for Python (tested with 5.4.41)
+  * The test case database must already be installed on either the local or a remote machine.
+
+== Running the tests from the .csv file ==
+  * From the trunk directory, run the harness, specifying the .csv file containing the tests: `$ ./harness/harness.py ./harness/csv/sample.csv -t ./tests/`
+  * One test case is expected to pass, one is expected to fail.  Your results should look similar to the following:
+{{{
+2010-05-17 10:18:21 SuiteDirectives          DEBUG    Running pre-suite validation.
+2010-05-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
+2010-05-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:PassingTestExample
+2010-05-17 10:18:21 PassingTestExample       INFO     Running the PassingTestExample() test case.
+2010-05-17 10:18:21 PassingTestExample       INFO     Test case passed.
+2010-05-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
+2010-05-17 10:18:21 Harness                  INFO     Test harness_ut.py:PassingTestExample: PASS
+2010-05-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
+2010-05-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:FailingTestExample
+2010-05-17 10:18:21 FailingTestExample       INFO     Running the FailingTestExample() test case.
+2010-05-17 10:18:21 FailingTestExample       ERROR    Test case failed.
+2010-05-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
+2010-05-17 10:18:21 Harness                  INFO     Test harness_ut.py:FailingTestExample: FAIL
+2010-05-17 10:18:21 SuiteDirectives          DEBUG    Running post-suite validation.
+2010-05-17 10:18:21 Harness                  REPORT   
+################################################################################
+#                             TEST RESULTS SUMMARY                             #
+################################################################################
+
+= harness_ut.py  ===============================================================
+  FailingTestExample .....................................................FAIL
+  PassingTestExample .....................................................PASS
+
+Total run:    2
+Total PASS:   1
+Total FAIL:   1
+Total SKIP:   0
+Total XFAIL:  0
+}}}
+
+== Running the tests from the database ==
+=== Configure the local database.ini file ===
+  * Open the file harness/database.ini and update the values to match your own SQL server.  Default values are as follows:
+{{{
+[database]
+host: localhost
+db_name: autotest
+user: root
+password: maxiscale
+}}}
+
+=== Create a new test suite in the database ===
+  * Connect to your test database, e.g. `http://localhost/autotest`
+  * From the drop-down menu in the top-left corner, select *Management*.
+  * From the *Upload tests* menu, click the *Choose File* button.
+  * Navigate to the harness/csv/sample.csv file and click *Update database*.
+  * Switch from the *Upload tests* view to *Test suite management*.
+  * In the text field next to *New Suite*, enter a test suite name, e.g. sample.
+  * Click *Set working suite*.
+  * Ctrl-click the two test cases from the left-side frame, i.e. FailingTestExample and PassingTestExample.
+  * Click *Add tests to suite*.
+
+You have now successfully created a test suite called `sample`.  This suite is stored in the database and contains two test cases.
+
+=== Run the tests, fetching the suite details from the database ===
+  * From the trunk directory, run the harness, specifying suite name created above.  Optionally, add the --store option to archive the test pass/fail data into the database. `$ ./harness/harness.py sample -t ./tests/ --store`
+  * As before, one test case is expected to pass, one is expected to fail.  Your results should look similar to what was reported above.  However, one additional line will be displayed at the top of the output:
+{{{
+2010-05-17 10:34:36 Harness                  DEBUG    Running Suite ID 1: sample
+}}}
+
+This indicates that a suite called `sample`, stored in the database as suite ID 1 has been run.
