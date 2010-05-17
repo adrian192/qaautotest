@@ -18,6 +18,7 @@ class PassingTestExample(object):
 
     def run(self):
         self.log.info("Running the PassingTestExample() test case.")
+        self.log.info("Test case passed.")
         return True
 
 
@@ -29,6 +30,7 @@ class FailingTestExample(object):
 
     def run(self):
         self.log.info("Running the FailingTestExample() test case.")
+        self.log.error("Test case failed.")
         return False
 
 
