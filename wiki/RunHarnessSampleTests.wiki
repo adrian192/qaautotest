@@ -14,7 +14,7 @@ To run a test suite from the database the following additional requirements must
   * The test case database must already be installed on either the local or a remote machine.
 
 == Running the tests from the .csv file ==
-  * From the trunk directory, run the harness, specifying the .csv file containing the tests: `$ ./harness/harness.py ./harness/csv/sample.csv -t ./tests/`
+  * From the trunk directory, run the harness, specifying the .csv file containing the tests: `$ ./harness/harness.py ./harness/csv/sample.csv -t ./tests`
   * One test case is expected to pass, one is expected to fail.  Your results should look similar to the following:
 {{{
 2010-05-17 10:18:21 SuiteDirectives          DEBUG    Running pre-suite validation.
@@ -46,6 +46,12 @@ Total FAIL:   1
 Total SKIP:   0
 Total XFAIL:  0
 }}}
+
+
+== Running an individual test from the command line ==
+This can be a useful option when creating new test cases as it allows rapid execution of a single, explicit test case.
+  * From the trunk directory, run the harness, specifying the test to run at the command line: `$ ./harness/harness.py harness_ut.py:PassingTestExample -t ./tests`
+  * The output will look similar to the above.  However, only the specified test will have been run.
 
 == Running the tests from the database ==
 === Configure the local database.ini file ===
