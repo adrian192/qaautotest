@@ -325,6 +325,17 @@ class Harness(object):
                        "utime": 0, # user time duration
                        "status": "FAIL",
                        "message": ""}
+        rar_dict = {"": False,
+                    0: False,
+                    "0": False,
+                    "False": False,
+                    None: False,
+                    "disabled": False,
+                    1: True,
+                    "1": True,
+                    "True": True,
+                    "enabled": True}
+        
         test_config = copy.copy(config)
         test_status["test_file"] = test_case_params[0]
         test_status["test_class"] = test_case_params[1]
@@ -332,13 +343,9 @@ class Harness(object):
         test_status["run_flag"] = test_case_params[3]
         if len(test_case_params) > 4:
             try:
-                if int(test_case_params[4]):
-                    test_config["run_as_root"] = True
-                else:
-                    test_config["run_as_root"] = False
-            except:
-                self.log.debug("runAsRoot value for test %s:%s is set to "
-                               "'%s'.  Expected '0' or '1'."
+                test_config["run_as_root"] = rar_dict[test_case_params[4]]
+            except KeyError:
+                self.log.debug("run_as_root value for test %s:%s is set to '%s'."
                                %(test_status["test_file"],
                                  test_status["test_class"], test_case_params[4]))
                 test_config["run_as_root"] = False
