@@ -329,11 +329,13 @@ class Harness(object):
                     0: False,
                     "0": False,
                     "False": False,
+                    False: False,
                     None: False,
                     "disabled": False,
                     1: True,
                     "1": True,
                     "True": True,
+                    True: True,
                     "enabled": True}
         
         test_config = copy.copy(config)
