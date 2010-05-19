@@ -13,7 +13,7 @@ try:
     import dbaccess
 except ImportError:
     print("The Python MySQL client MySQLdb is not installed.")
-    print("Please install the python-mysqldb package or download it here:"
+    print("Please install the python-mysqldb package or download it here:")
     print("http://sourceforge.net/projects/mysql-python/")
     sys.exit(1)
 
