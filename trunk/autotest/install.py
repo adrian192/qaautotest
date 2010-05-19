@@ -8,7 +8,14 @@ import socket
 import signal
 import getpass
 import logging
-import dbaccess
+try:
+    import MySQLdb
+    import dbaccess
+except ImportError:
+    print("The Python MySQL client MySQLdb is not installed.")
+    print("Please install the python-mysqldb package or download it here:"
+    print("http://sourceforge.net/projects/mysql-python/")
+    sys.exit(1)
 
 # This table list is all the tables
 tables_list = {
