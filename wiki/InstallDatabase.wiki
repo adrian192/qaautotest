@@ -8,6 +8,7 @@ This page describes how to install the test database on your machine.
   * Linux host (tested with Ubuntu 10.04)
   * Local installation of MySQL (tested with 5.1.41)
   * Python 2.6 (tested with 2.6.5)
+  * MySQL Python library
   * PHP (tested with 5.3.2-1)
   * Web server running locally (tested with Apache/2.2.14)
 
