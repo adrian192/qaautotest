@@ -7,7 +7,7 @@ def main():
     run_tests = []
     run_tests.append(PassingTestExample(params).run())
     run_tests.append(FailingTestExample(params).run())
-    print run_tests
+    print(run_tests)
 
 
 class PassingTestExample(object):
