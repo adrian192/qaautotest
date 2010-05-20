@@ -39,7 +39,7 @@ class Harness(object):
     def __init__(self, log_dir=None, log_level=logging.DEBUG):
         self.harness_path = os.getcwd()
         self.__setup_logging(log_dir, log_level)
-        self.dbA = None # initialize with self.initialize_datbase()
+        self.dba = None # initialize with self.initialize_datbase()
         self.test_dir = "" # initialize with self.add_tests()
         self.file_to_dir = {} # initialize with self.add_tests()
         self.test_list = [] # initialize with self.add_tests()
@@ -79,10 +79,22 @@ class Harness(object):
                                  "results will not be recorded.")
     
     def initialize_database(self, ini):
+        """ Attempts to create an initial connection to the database.  The
+        configuration information is stored in a file, typically in the same
+        directory as the harness, and is expected to be in the following format:
+        [database]
+        host: <host_name_of_SQL_server>
+        db_name: <database_name>
+        user: <MySQL_root_user_or_administrator_of_database>
+        password: <password_for_above_user_name>
+        
+        Failure to connect to the database is only fatal if the list of tests
+        is said to come from the database.
+        """
         try:
             dir(MySQLdb)
         except NameError:
-            self.dbA = None
+            self.dba = None
             return False
         config = configparser.SafeConfigParser()
         try:
@@ -91,12 +103,12 @@ class Harness(object):
             self.log.warning("The database configuration file %s is not in the "
                              "expected format.  It contains no section headers."
                              %ini)
-            self.dbA = None
+            self.dba = None
             return False
         if not config.has_section("database"):
             self.log.warning("The database configuration file %s has no section "
-                  "\"[database]\".  This section is required." %ini)
-            self.dbA = None
+                             "\"[database]\".  This section is required." %ini)
+            self.dba = None
             return False
         try:
             host = config.get("database", "host").split()[0]
@@ -108,22 +120,34 @@ class Harness(object):
                              "the database configuration file.  Ensure that "
                              "the host, user, password, and datbase name are "
                              "specified.")
-            self.dbA = None
+            self.dba = None
             return False
         
-        # Create the DB object, it is not connected yet.  Any function using
-        # this need to open and close it.
+        # Create the database object.  It is not connected yet.  Any function 
+        # using this needs to open and close it.
         try:
-            self.dbA = dbaccess(host, user, password, db_name)
+            self.dba = dbaccess(host, user, password, db_name)
             return True
         except:
             self.log.info("Unable to connect to the database.  Test results "
                           "will not be reported to the database.")
-            self.dbA = None
-            self.notUpdateDB = True
+            self.dba = None
             return False
         
     def add_tests(self, test_dir, tests):
+        """ This function takes test_dir (the directory in which all the files
+        where the test cases may be found) and recursively lists out all of
+        the files found.
+        
+        "tests" should be one of the following:
+        * A suite from the database, from which a list of tests can be fetched.
+        * A .csv file, containing a list of tests to run.
+        * A directive in file:class format specifying a single test to run.
+        
+        Based on the pattern of "tests", and the contents of test_dir, a full
+        listing of tests according to their file names are generated and
+        stored as self.test_list.
+        """
         file_dict = {}
         self.test_dir = os.path.abspath(test_dir)
         if not os.path.exists(self.test_dir):
@@ -151,7 +175,10 @@ class Harness(object):
         return True
     
     def __build_test_list_from_csv(self, csv_file):
-        self.dbA = None
+        """ Creates a list of tests to run based on the file/class names found
+        in the .csv file.
+        """
+        self.dba = None
         import csv
         test_list = []
         try:
@@ -170,7 +197,11 @@ class Harness(object):
         return test_list
     
     def __build_test_list_from_cli(self, cli):
-        self.dbA = None
+        """ Creates a list of the test to run based on the file/class name
+        specified at the command line.  It should be in file:class format, e.g.
+        my_test_file.py:MyClassName
+        """
+        self.dba = None
         test_list = []
         try:
             file_name, class_name = cli.split(":")
@@ -182,69 +213,77 @@ class Harness(object):
             return None
     
     def __build_test_list_from_database(self, suite):
+        """ Creates a list of tests to run based on the file/class names found
+        in the database.  The suite name is passed into the database through a
+        query.  The database then returns the list of files/tests.
+        """
         test_list = []
-        if self.dbA == None:
+        if self.dba == None:
             self.log.error("A suite name was specified but no connection to "
                            "the test database could be made.")
             return None
         try:
-            self.dbA.connect_db()
+            self.dba.connect_db()
         except:
             self.log.error("Unable to connect to database to check for the "
                            "suite named \"%s\".  Test run failed." %suite)
             sys.exit(1)
         # suite query.
-        qReturn = self.dbA.query("select * from auto_suite_list where suite_name=\"%s\"" %suite)
-        if qReturn == ():
+        db_rc = self.dba.query("select * from auto_suite_list where suite_name=\"%s\"" %suite)
+        if db_rc == ():
             self.log.error("The given suite \"%s\" is not in the autotest "
                            "database." %suite)
-            self.dbA.disconnect_db()
+            self.dba.disconnect_db()
             sys.exit(1)
 
         # First get the suite ID from the query
         try:
-            self.suite_id = qReturn[0]['id']
-            self.log.debug("Running Suite ID %s: %s" %(str(self.suite_id), suite))
+            self.suite_id = db_rc[0]['id']
+            self.log.debug("Running Suite ID %s: %s" %(str(self.suite_id),
+                                                       suite))
         except:
-            # Should never get here.
-            raise
+            self.log.error("Failed to reference the suite ID %s.  The "
+                           "following error was raised: %s"
+                           %(str(self.suite_id), traceback.format_exc()))
+            sys.exit(1)
         
-        # If the suite is in the database check which tests are part of this suite.
-        qReturn = self.dbA.query("select id, testFile, testClass from auto_test_suites where auto_suite_name=\"%s\"" %suite)
-        if qReturn == ():
+        # If the suite's in the database check which tests are part of the suite
+        db_rc = self.dba.query("select id, testFile, testClass from auto_test_suites where auto_suite_name=\"%s\"" %suite)
+        if db_rc == ():
             self.log.error("Given suite \"%s\" does not have any tests "
                            "associated with it." %suite)
-            self.dbA.disconnect_db()
+            self.dba.disconnect_db()
             sys.exit(1)
 
         # If we got the suite and we have tests in the suite, build the testList.
         # We need to query the test list to get other info, like xfail, skip values.
-        atc_File = []
-        atc_Class = []
+        atc_file = []
+        atc_class = []
         atc_list = [] # Create a pair with File and Class, to allow same test name in different files.
-        for item in qReturn:
+        for item in db_rc:
             file_name = item['testFile']
             class_name = item['testClass']
             # Do a search on the auto_test_case list for testFile and testClass
-            if file_name not in atc_File:
-                atc_File.append(file_name)
-            if class_name not in atc_Class:
-                atc_Class.append(class_name)
+            if file_name not in atc_file:
+                atc_file.append(file_name)
+            if class_name not in atc_class:
+                atc_class.append(class_name)
             atc_list.append("%s:%s"%(file_name, class_name))
-        atc_File = "\"%s\""%"\",\"".join(atc_File)
-        atc_Class = "\"%s\""%"\",\"".join(atc_Class)
-        testListReturn = self.dbA.query("select File, Class, targetVersion, "
-                                        "testRunFlag, runAsRoot from "
-                                        "auto_test_case where File in (%s) "
-                                        "and Class in (%s) order by File, Class"
-                                        %(atc_File, atc_Class))
-        if testListReturn == ():
+        atc_file = "\"%s\""%"\",\"".join(atc_file)
+        atc_class = "\"%s\""%"\",\"".join(atc_class)
+        db_test_data = self.dba.query("select File, Class, targetVersion, "
+                                      "testRunFlag, runAsRoot from "
+                                      "auto_test_case where File in (%s) "
+                                      "and Class in (%s) order by File, Class"
+                                      %(atc_file, atc_class))
+        if db_test_data == ():
             self.log.error("Failed to create test case list from the database.")
-            self.dbA.disconnect_db()
+            self.dba.disconnect_db()
             sys.exit(1)
-        # Update the testList with testFileName, testClassName, targetVersion, runTimeFlag, Discription
+        # Update the testList with testFileName, testClassName, targetVersion,
+        # runTimeFlag, Discription
         # The targetVersion and Discription will be '' string.
-        for item in testListReturn:
+        for item in db_test_data:
             if ("%s:%s" %(item['File'], item['Class']) in atc_list):
                 test_list.append([item['File'], item['Class'],
                                  item['targetVersion'], item['testRunFlag'],
@@ -544,22 +583,23 @@ class Harness(object):
         
     def __update_database(self):
         job_id = 0
-        if self.dbA == None:
+        if self.dba == None:
             return False
         try:
-            self.dbA.connect_db()
+            self.dba.connect_db()
         except:
             self.log.error("The following exception was raised accessing the "
                            "database: %s" %traceback.format_exc())
             return False
         
         # insert into the job table and get back the insert ID, the insertID is the new jobID
-        addJobQuery = "insert into auto_test_jobs (startTime, status, version, jobHTML, primeTestUnit, suiteID) "+\
-                      "values (%s, '%s', '%s', '%s', '%s', %s)" \
-                      %(self.test_start_time, "running", "1", "none", get_local_ip(), self.suite_id)
-        dbReturn = self.dbA.update(addJobQuery)
-        if dbReturn != 0: # If we added at least 1 row to the table.
-            job_id = self.dbA.db.insert_id()  # The insert ID is the jobID, this is the primary ID field in the table.
+        add_job_query = "insert into auto_test_jobs (startTime, status, version, jobHTML, primeTestUnit, suiteID) "+\
+                        "values (%s, '%s', '%s', '%s', '%s', %s)" \
+                        %(self.test_start_time, "running", "1", "none", get_local_ip(), self.suite_id)
+        
+        db_rc = self.dba.update(add_job_query)
+        if db_rc != 0: # If we added at least 1 row to the table.
+            job_id = self.dba.db.insert_id()  # The insert ID is the jobID, this is the primary ID field in the table.
         
         for label, test in self.test_results.iteritems():
             # 3: Compose the update line
@@ -581,15 +621,15 @@ class Harness(object):
             
             query_line = "insert into auto_test_item set testFile='%s',testClass='%s',jobID=%s,%s" \
                         %(test["test_file"], test["test_class"], job_id, update_line)
-            dbReturn = self.dbA.update(query_line)
-            if dbReturn == 0:
+            db_rc = self.dba.update(query_line)
+            if db_rc == 0:
                 self.log.error("Failed to update the database with data.")  
         
-        self.dbA.disconnect_db()
+        self.dba.disconnect_db()
         return True
 
     def print_to_screen(self):
-        """ This will take the test result dic and print it to screen. """
+        """ Take the test results dictionary and print it to screen. """
         if len(self.test_results) == 0:
             self.log.warning("No results recorded in test output.")
             return
@@ -599,7 +639,10 @@ class Harness(object):
         xfail_count = 0
         total_count = len(self.test_results)
         keys = self.test_results.keys()
-        keys.sort()
+        if sys.version_info[0] < 3:
+            keys.sort()
+        else:
+            keys = sorted(self.test_results.keys())
         
         final_output = "\r\n"
         final_output += "".ljust(80, "#")+"\r\n"
@@ -636,12 +679,12 @@ class Harness(object):
     
     
 def intrupt_handle(sig, b):
+    """ Exit if we get a SIGQUIT, SIGABRT, SIGINT, or SIGTERM. """
     print("\nCaught signal: %s.  Exiting." %str(sig))
-        # Restore signal handler default
+    # Restore default signal handler
     if os.name == "posix":
-        signal.signal(signal.SIGHUP, signal.SIG_DFL)
         signal.signal(signal.SIGQUIT, signal.SIG_DFL)
-        signal.signal(signal.SIGALRM, signal.SIG_DFL)
+    signal.signal(signal.SIGABRT, signal.SIG_DFL)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
     os._exit(1)
@@ -665,13 +708,10 @@ def get_local_ip():
 
 
 if __name__ == "__main__":
-    ## Setup the signal handles, mainly use for safe Ctrl-C exits.
+    # Setup the signal handlers to ensure quick/clean exit on these signals
     if os.name == "posix":
-        # These don't do a lot of good on windows.
-        signal.signal(signal.SIGHUP, intrupt_handle)
         signal.signal(signal.SIGQUIT, intrupt_handle)
-        signal.signal(signal.SIGALRM, intrupt_handle)
-    # General sig that could happen on windows systems.
+    signal.signal(signal.SIGABRT, intrupt_handle)
     signal.signal(signal.SIGINT, intrupt_handle)
     signal.signal(signal.SIGTERM, intrupt_handle)
     main()

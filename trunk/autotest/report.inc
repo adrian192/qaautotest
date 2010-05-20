@@ -498,7 +498,7 @@ function report_allTest ($whereClause) {
 	// Put the result into the info array
 	?>
 	<table border=1>
-	<tr><th colspan=10>All Job Test Report
+	<tr><th colspan=10>All Jobs Test Report
 	</th></tr>
 	<tr><th>File Name</th>
 	<th>Test Class</th>
