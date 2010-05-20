@@ -432,10 +432,19 @@ class Harness(object):
         # Import the test file and instantiate the test class.
         try:
             os.chdir(self.file_to_dir[test_status["test_file"]])
-            exec("import %s" %test_status["test_file"].split(".")[0])
-            exec("test_object = %s.%s(test_config)"
-                 %(test_status["test_file"].split(".")[0],
-                   test_status["test_class"]))
+            if sys.version_info[0] < 3:
+                exec("import %s" %test_status["test_file"].split(".")[0])
+                exec("test_object = %s.%s(test_config)"
+                     %(test_status["test_file"].split(".")[0],
+                       test_status["test_class"]))
+            else:
+                ldict = locals().copy()
+                exec("import %s" %test_status["test_file"].split(".")[0],
+                     globals())
+                exec("test_object = %s.%s(test_config)"
+                     %(test_status["test_file"].split(".")[0],
+                       test_status["test_class"]), globals(), ldict)
+                test_object = ldict["test_object"]
             os.chdir(self.harness_path)
         except AttributeError:
             self.log.error("The test case %s cannot be found in the file %s."
@@ -465,7 +474,13 @@ class Harness(object):
         kernel_time_start = kernel_time_end = os_times[1]
         try:
             os.chdir(self.file_to_dir[test_status["test_file"]])
-            exec("test_status[\"status\"] = test_object.run()")
+            if sys.version_info[0] < 3:
+                exec("test_status[\"status\"] = test_object.run()")
+            else:
+                ldict = locals().copy()
+                exec("test_status[\"status\"] = test_object.run()",
+                     globals(), ldict)
+                test_status["status"] = ldict["test_status"]["status"]
             del test_object
             os.chdir(self.harness_path)
         except AssertionError:
