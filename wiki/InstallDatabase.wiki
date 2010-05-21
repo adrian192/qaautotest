@@ -12,6 +12,24 @@ This page describes how to install the test database on your machine.
   * PHP (tested with 5.3.2-1)
   * Web server running locally (tested with Apache/2.2.14)
 
+== Preparing the MySQL Server ==
+==== Know the root password for MySQL ====
+If this is an existing database server with a known root password, you may skip this step.  If your MySQL server is a new installation, you must first set a root password.  To do that, perform the following steps:
+  * Log on to your MySQL server as root.
+  * From a console, issue the following commands:
+   # `mysql -u root`
+   # `mysql> use mysql`
+   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';`
+   # `mysql> FLUSH PRIVILEGES;`
+
+==== Configure your MySQL server to allow network access ====
+By default, MySQL does not allow remote access.  You must allow remote access by performing the following:
+   # Open your `my.cnf` file (`/etc/mysql/my.cnf` or `/etc/my.cnf`).
+   # If the line `skip-networking` is present, comment it out.
+   # If the line `bind-address = 127.0.0.1` is present, change `127.0.0.1` to your machine's public IP address.
+   # Restart the MySQL server: `service mysql restart` or `/etc/init.d/mysql restart`.
+
+
 == Installation ==
   * Check out the source code.
   * Read through the [http://code.google.com/p/qaautotest/wiki/Troubleshooting troubleshooting] section to ensure your MySQL server is prepared to host the test database.
