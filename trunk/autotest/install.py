@@ -134,7 +134,7 @@ def main():
     os.makedirs(target_dir)
     os.mkdir(os.path.join(target_dir, "csv"))
     os.chmod(os.path.join(target_dir, "csv"), stat.S_IRWXU|stat.S_IRWXG|stat.S_IRWXO)
-    os.system("cp -p *.inc *.php *.html %s" %target_dir)
+    os.system("cp -p *.inc *.php %s" %target_dir)
     create_ini(target_dir, input_array[0], input_array[1], input_array[2], input_array[3])
     print("Installation successful!")
     print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[1]))
