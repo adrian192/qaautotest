@@ -29,16 +29,7 @@ For troubleshooting tips, go to http://localhost/autotest/help.html
 }}}
 
 == Troubleshooting ==
-=== Page doesn't load ===
-If, when you connect to `http://localhost/autotest`, you get an error indicating that the page cannot load, there are two likely explanations:
-  * The web server isn't started.  Check the status of your web server with a command such as `service httpd status` or `/etc/init.d/apache2 status`.
-  * The installation target directory wasn't the web root.  The default web root in the installation script is `/var/www/html`.  This is the default for CentOS.  Ubuntu uses `/var/www` as its default web root.  Make sure you have the correct web root configured.
-
-=== Page gets downloaded, not displayed ===
-If, when you connect to `http://localhost/autotest`, you get a request to download a file, this indicates that the index.php script isn't being correctly processed.  On Ubuntu, among other OSes, you may need to install the following packages:
-libapache2-mod-php5 php5-cli php5-common php5-cgi
-
-Also, verify that index.php is a valid index file in your apache configuration file.
+See the [http://code.google.com/p/qaautotest/wiki/Troubleshooting Troubleshooting] page in the wiki.
 
 == Uninstalling ==
   * Remove the installed files:
