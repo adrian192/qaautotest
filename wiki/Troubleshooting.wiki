@@ -14,6 +14,11 @@ This troubleshooting page should help resolve the most common initial installati
   * Try installing the following packages: `libapache2-mod-php5 php5-cli php5-common php5-cgi`
   * Verify that index.php is identified as being a valid index file in your apache/httpd configuration file.
 
+=== Web page doesn't load ===
+If, when you connect to `http://localhost/autotest`, you get an error indicating that the page cannot load, there are two likely explanations:
+  * The web server isn't started.  Check the status of your web server with a command such as `service httpd status` or `/etc/init.d/apache2 status`.
+  * The installation target directory wasn't the web root.  The default web root in the installation script is `/var/www/html`.  This is the default for CentOS.  Ubuntu uses `/var/www` as its default web root.  Make sure you have the correct web root configured.
+
 === ERROR 2003 connecting to the database ===
 *Problem:* Unable to connect to the database over the network.
 
