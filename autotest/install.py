@@ -8,14 +8,7 @@ import socket
 import signal
 import getpass
 import logging
-try:
-    import MySQLdb
-    import dbaccess
-except ImportError:
-    print("The Python MySQL client MySQLdb is not installed.")
-    print("Please install the python-mysqldb package or download it here:")
-    print("http://sourceforge.net/projects/mysql-python/")
-    sys.exit(1)
+import dbaccess
 
 # This table list is all the tables
 tables_list = {
@@ -127,18 +120,18 @@ def main():
         sys.exit(1)
     
     # Try to create the database tables first
-    b = CreateTestDatabase(input_array[0], input_array[1], input_array[2], input_array[3])
+    b = CreateTestDatabase(input_array[0], input_array[1], input_array[2], input_array[3], input_array[5], input_array[6])
     
     # Now copy the files into the web root.
     target_dir = os.path.join(input_array[4], input_array[1])
     os.makedirs(target_dir)
     os.mkdir(os.path.join(target_dir, "csv"))
     os.chmod(os.path.join(target_dir, "csv"), stat.S_IRWXU|stat.S_IRWXG|stat.S_IRWXO)
-    os.system("cp -p *.inc *.php %s" %target_dir)
-    create_ini(target_dir, input_array[0], input_array[1], input_array[2], input_array[3])
+    os.system("cp -p *.inc *.php *.html %s" %target_dir)
+    create_ini(target_dir, input_array[0], input_array[1], input_array[5], input_array[6])
     print("Installation successful!")
     print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[1]))
-    print("For troubleshooting tips, go to http://code.google.com/p/qaautotest/wiki/Troubleshooting")
+    print("For troubleshooting tips, go to http://%s/%s/help.html" %(input_array[0], input_array[1]))
     
 def get_input():
     input = []
@@ -147,6 +140,8 @@ def get_input():
     user = ""
     password = ""
     webroot = ""
+    test_user = ""
+    test_password = ""
     
     sql_host = raw_input("Enter the MySQL host name [localhost]: ")
     if sql_host == "":
@@ -176,6 +171,14 @@ def get_input():
         webroot = "/var/www/html"
     input.append(webroot)
     
+    test_user = raw_input("Create a normal user for the database [tester1]: ")
+    if test_user == "":
+        test_user = "tester1"
+    input.append (test_user)
+
+    test_password = getpass.getpass("Create a password for the normal user: ")
+    input.append (test_password)
+    
     return input
     
 def pre_flight_check(input):
@@ -204,7 +207,12 @@ def create_ini(target_dir, host, db_name, user, password):
 
 
 class CreateTestDatabase(object):
-    def __init__(self, db_host, db_name, db_user, db_pass):
+    def __init__(self, db_host, db_name, db_user, db_pass, test_user="tester1", test_password="tester1"):
+        self.db_name = db_name
+        # test_user and test_password is the user name and password for
+        # everyday use of the harness and test system.
+        self.test_user = test_user
+        self.test_password = test_password
         self.dba = dbaccess.dbaccess(db_host, db_user, db_pass, "")
         try:
             self.dba.connect_db()
@@ -212,6 +220,7 @@ class CreateTestDatabase(object):
             print("Failed to connect to database.")
         self.create_db(db_name)
         self.create_tables()
+        self.createTesterUser (self.test_user, self.test_password)
         self.dba.disconnect_db()
     
     def create_db(self, db_name):
@@ -238,6 +247,29 @@ class CreateTestDatabase(object):
             rc = self.dba.update(query)
             if rc != 0:
                 print("Failed to create table %s" %item)
+
+    def createTesterUser (self, user, password):
+        createString = "CREATE USER \"%s\"@\"%%\" IDENTIFIED BY \"%s\""%(user, password)
+        createString2 = "CREATE USER \"%s\"@\"localhost\" IDENTIFIED BY \"%s\""%(user, password)
+        privString = "GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, DELETE, INDEX, INSERT, LOCK TABLES, "
+        privString += "SELECT, UPDATE ON %s.* TO "%self.db_name
+        privString2 = privString + "\"%s\"@\"localhost\""%user
+        privString += "\"%s\"@\"%%\""%user
+        rc = self.dba.update (createString)
+        if rc == 1:
+            print ("Unable to create the \"%s\" user.  User may already exist."%user)
+        rc = self.dba.update (createString2)
+        if rc == 1:
+            print ("Unable to create the \"%s\" user for localhost.  User may already exist."%user)
+
+        print ("Setting up database privileges for the test user \"%s\"."%user)
+        rc = self.dba.update (privString)
+        if rc == 1:
+            print ("Unable to setup remote privileges for \"%s\" user."%user)
+        rc = self.dba.update (privString2)
+        if rc == 1:
+            print ("Unable to setup localhost privileges for \"%s\" user."%user)
+        return
 
 
 if __name__ == "__main__":
