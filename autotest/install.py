@@ -120,28 +120,32 @@ def main():
         sys.exit(1)
     
     # Try to create the database tables first
-    b = CreateTestDatabase(input_array[0], input_array[1], input_array[2], input_array[3], input_array[5], input_array[6])
+    b = CreateTestDatabase(input_array[0], input_array[1], input_array[2],
+                           input_array[3], input_array[4], input_array[6],
+                           input_array[7])
     
     # Now copy the files into the web root.
-    target_dir = os.path.join(input_array[4], input_array[1])
+    target_dir = os.path.join(input_array[5], input_array[2])
     os.makedirs(target_dir)
     os.mkdir(os.path.join(target_dir, "csv"))
     os.chmod(os.path.join(target_dir, "csv"), stat.S_IRWXU|stat.S_IRWXG|stat.S_IRWXO)
-    os.system("cp -p *.inc *.php *.html %s" %target_dir)
-    create_ini(target_dir, input_array[0], input_array[1], input_array[5], input_array[6])
+    os.system("cp -p *.inc *.php %s" %target_dir)
+    create_ini(target_dir, input_array[0], input_array[1], input_array[2],
+               input_array[6], input_array[7])
     print("Installation successful!")
-    print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[1]))
-    print("For troubleshooting tips, go to http://%s/%s/help.html" %(input_array[0], input_array[1]))
+    print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[2]))
+    print("For troubleshooting tips, go to http://code.google.com/p/qaautotest/wiki/Troubleshooting")
     
 def get_input():
     input = []
     sql_host = ""
+    port = ""
     dbname = ""
-    user = ""
-    password = ""
+    root_user = ""
+    root_password = ""
     webroot = ""
-    test_user = ""
-    test_password = ""
+    local_user = ""
+    local_password = ""
     
     sql_host = raw_input("Enter the MySQL host name [localhost]: ")
     if sql_host == "":
@@ -153,40 +157,45 @@ def get_input():
         sys.exit(1)
     input.append(sql_host)
     
+    port = raw_input("Enter the port address for the MySQL server [3306]: ")
+    if port == "":
+        port = 3306
+    input.append(port)
+    
     dbname = raw_input("Enter the name for the database [autotest]: ")
     if dbname == "":
         dbname = "autotest"
     input.append(dbname)
     
-    user = raw_input("Enter the root user name for the MySQL database [root]: ")
-    if user == "":
-        user = "root"
-    input.append(user)
+    root_user = raw_input("Enter the root user name for the MySQL database [root]: ")
+    if root_user == "":
+        root_user = "root"
+    input.append(root_user)
     
-    password = getpass.getpass("Enter the corresponding password for the MySQL database: ")
-    input.append(password)
+    root_password = getpass.getpass("Enter the password for the root user: ")
+    input.append(root_password)
     
     webroot = raw_input("Enter the name of your web root [/var/www/html]: ")
     if webroot == "":
         webroot = "/var/www/html"
     input.append(webroot)
     
-    test_user = raw_input("Create a normal user for the database [tester1]: ")
-    if test_user == "":
-        test_user = "tester1"
-    input.append (test_user)
+    local_user = raw_input("Create a normal user for the database [tester]: ")
+    if local_user == "":
+        local_user = "tester"
+    input.append(local_user)
 
-    test_password = getpass.getpass("Create a password for the normal user: ")
-    input.append (test_password)
+    local_password = getpass.getpass("Create a password for the normal user: ")
+    input.append(local_password)
     
     return input
     
 def pre_flight_check(input):
-    target_dir = os.path.join(input[4], input[1])
-    if not os.access(input[4], os.W_OK):
-        print("Write access is not allowed to the web root %s" %input[4])
+    target_dir = os.path.join(input[5], input[2])
+    if not os.access(input[5], os.W_OK):
+        print("Write access is not allowed to the web root %s" %input[5])
         if os.geteuid() != 0:
-            print "Rerun using sudo."
+            print("Rerun using sudo.")
             sys.exit(1)
         print("Add write access to the directory and try again.")
     if os.path.exists(target_dir):
@@ -195,10 +204,11 @@ def pre_flight_check(input):
         sys.exit(1)
     return True
     
-def create_ini(target_dir, host, db_name, user, password):
+def create_ini(target_dir, host, port, db_name, user, password):
     file = open(os.path.join(target_dir, "database.ini"), "wb")
     file.write("[database]\n")
     file.write("host = %s\n" %host)
+    file.write("port = %s\n" %port)
     file.write("db_name = %s\n" %db_name)
     file.write("user = %s\n" %user)
     file.write("password = %s\n" %password)
@@ -207,70 +217,94 @@ def create_ini(target_dir, host, db_name, user, password):
 
 
 class CreateTestDatabase(object):
-    def __init__(self, db_host, db_name, db_user, db_pass, test_user="tester1", test_password="tester1"):
+    def __init__(self, db_host, port, db_name, db_user, db_pass, local_user,
+                 local_password):
+        """ db_user and db_pass are the database root user credentials.
+        local_user and local_password are the credentials for a user that will
+        be created and given administrative access only to the test case
+        database.
+        """
         self.db_name = db_name
-        # test_user and test_password is the user name and password for
-        # everyday use of the harness and test system.
-        self.test_user = test_user
-        self.test_password = test_password
-        self.dba = dbaccess.dbaccess(db_host, db_user, db_pass, "")
+        self.local_user = local_user
+        self.local_password = local_password
+        self.dba = dbaccess.dbaccess(host=db_host, user=db_user,
+                                     password=db_pass, database_name="",
+                                     port=port)
+        
         try:
             self.dba.connect_db()
         except:
-            print("Failed to connect to database.")
+            print("Failed to connect to database.  Verify you are using the "
+                  "correct password and try again.")
+            sys.exit(1)
+        self.pre_flight_check()
         self.create_db(db_name)
         self.create_tables()
-        self.createTesterUser (self.test_user, self.test_password)
+        self.create_local_admin(self.local_user, self.local_password)
         self.dba.disconnect_db()
-    
-    def create_db(self, db_name):
-        # Check if the database already exists.
-        query = "show databases like \"%s\"" %db_name
+        
+    def pre_flight_check(self):
+        query = "show databases like \"%s\"" %self.db_name
         rc = self.dba.update(query)
         if rc == 1:
-            print("Unable to create the database.  An existing database called \'%s\' already exists." %db_name)
+            print("Unable to create the database.  An existing database called \'%s\' already exists." %self.db_name)
             print("To overwrite the database, you must manually drop the existing database first.")
             print("Steps:")
             print("   1: Open a mysql connection to the server, \"mysql -h <host> -u <user> -p")
-            print("   2: Command: drop database %s;" %db_name)
+            print("   2: Command: drop database %s;" %self.db_name)
             self.dba.disconnect_db()
-            sys.exit(0)
+            sys.exit(1)
+            
+        query = "select user from mysql.user where USER like \"%s\";" %self.local_user
+        rc = self.dba.update(query)
+        if rc > 0:
+            print("Unable to create the \"%s\" user.  User may already exist." %self.local_user)
+            print("Select a different user name or drop the user.")
+            print("To drop the user:")
+            print("   1: Open a mysql connection to the server, \"mysql -h <host> -u <user> -p")
+            print("   2: Command: use mysql")
+            print("   3: Command: select * from user;")
+            print("   4: Command: drop user \"%s\"@\"%%\";" %self.local_user)
+            print("   5: Command: drop user \"%s\"@\"localhost\";" %self.local_user)
+            self.dba.disconnect_db()
+            sys.exit(1)
+    
+    def create_db(self, db_name):        
         create = "create database if not exists %s" %db_name
         rc = self.dba.update(create)
         self.dba.update("use %s" %db_name)
 
     def create_tables(self):
-        #print(tables_list["auto_suite_list"])
-        #print(tables_list["user_list"])
         for item in tables_list:
             query = tables_list[item]
             rc = self.dba.update(query)
             if rc != 0:
                 print("Failed to create table %s" %item)
 
-    def createTesterUser (self, user, password):
-        createString = "CREATE USER \"%s\"@\"%%\" IDENTIFIED BY \"%s\""%(user, password)
-        createString2 = "CREATE USER \"%s\"@\"localhost\" IDENTIFIED BY \"%s\""%(user, password)
-        privString = "GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, DELETE, INDEX, INSERT, LOCK TABLES, "
-        privString += "SELECT, UPDATE ON %s.* TO "%self.db_name
-        privString2 = privString + "\"%s\"@\"localhost\""%user
-        privString += "\"%s\"@\"%%\""%user
-        rc = self.dba.update (createString)
+    def create_local_admin(self, user, password):
+        user_string_1 = "CREATE USER \"%s\"@\"%%\" IDENTIFIED BY \"%s\"" %(user, password)
+        user_string_2 = "CREATE USER \"%s\"@\"localhost\" IDENTIFIED BY \"%s\"" %(user, password)
+        priv_string = "GRANT ALTER, CREATE, CREATE TEMPORARY TABLES, DELETE, INDEX, INSERT, LOCK TABLES, "
+        priv_string += "SELECT, UPDATE ON %s.* TO " %self.db_name
+        priv_string_2 = priv_string + "\"%s\"@\"localhost\"" %user
+        priv_string += "\"%s\"@\"%%\"" %user
+        rc = self.dba.update(user_string_1)
+        rc = self.dba.update(user_string_2)
+        
+        print("Setting up database privileges for the test user \"%s\"." %user)
+        rc = self.dba.update(priv_string)
         if rc == 1:
-            print ("Unable to create the \"%s\" user.  User may already exist."%user)
-        rc = self.dba.update (createString2)
+            print("Unable to setup remote privileges for \"%s\" user." %user)
+            self.dba.disconnect_db()
+            sys.exit(1)
+        rc = self.dba.update(priv_string_2)
         if rc == 1:
-            print ("Unable to create the \"%s\" user for localhost.  User may already exist."%user)
-
-        print ("Setting up database privileges for the test user \"%s\"."%user)
-        rc = self.dba.update (privString)
-        if rc == 1:
-            print ("Unable to setup remote privileges for \"%s\" user."%user)
-        rc = self.dba.update (privString2)
-        if rc == 1:
-            print ("Unable to setup localhost privileges for \"%s\" user."%user)
+            print("Unable to setup localhost privileges for \"%s\" user." %user)
+            self.dba.disconnect_db()
+            sys.exit(1)
         return
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format='%(message)s')
     main()
