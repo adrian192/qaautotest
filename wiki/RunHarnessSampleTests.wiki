@@ -10,7 +10,7 @@ This page describes how to run the included sample test cases through the harnes
   * A local copy of the source code.
 
 To run a test suite from the database the following additional requirements must be met:
-  * MySQL client for Python (tested with 5.4.41)
+  * MySQL client for Python (tested with 1.2.2; http://sourceforge.net/projects/mysql-python/)
   * The test case database must already be installed on either the local or a remote machine.
 
 == Running the tests from the .csv file ==
@@ -60,8 +60,8 @@ This can be a useful option when creating new test cases as it allows rapid exec
 [database]
 host: localhost
 db_name: autotest
-user: root
-password: maxiscale
+user: tester
+password: password
 }}}
 
 === Create a new test suite in the database ===
