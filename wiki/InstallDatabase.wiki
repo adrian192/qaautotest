@@ -8,24 +8,29 @@ This page describes how to install the test database on your machine.
   * Linux host (tested with Ubuntu 10.04)
   * Local installation of MySQL (tested with 5.1.41)
   * Python 2.6 (tested with 2.6.5)
-  * MySQL Python library
+  * MySQL client library for Python (tested with 1.2.2; http://sourceforge.net/projects/mysql-python/)
   * PHP (tested with 5.3.2-1)
   * Web server running locally (tested with Apache/2.2.14)
 
 == Installation ==
   * Check out the source code.
-  * From the autotest directory, run install.py as root.
+  * Read through the [http://code.google.com/p/qaautotest/wiki/Troubleshooting troubleshooting] section to ensure your MySQL server is prepared to host the test database.
+  * From the autotest directory, run `install.py` as root.
   * Default values are provided.  Type enter to accept the defaults or enter your own custom value.
 {{{
 $ sudo ./install.py
 Enter the MySQL host name [localhost]: 
+Enter the port address for the MySQL server [3306]:
 Enter the name for the database [autotest]: 
 Enter the root user name for the MySQL database [root]: 
-Enter the corresponding password for the MySQL database: 
+Enter the password for the root user: 
 Enter the name of your web root [/var/www/html]: /var/www
+Create a normal user for the database [tester]: 
+Create a password for the normal user: 
+Setting up database privileges for the test user "tester".
 Installation successful!
 Connect to the GUI at http://localhost/autotest
-For troubleshooting tips, go to http://localhost/autotest/help.html
+For troubleshooting tips, go to http://code.google.com/p/qaautotest/wiki/Troubleshooting
 }}}
 
 == Troubleshooting ==
@@ -34,6 +39,12 @@ See the [http://code.google.com/p/qaautotest/wiki/Troubleshooting Troubleshootin
 == Uninstalling ==
   * Remove the installed files:
    # `rm -Rf <web_root>/autotest`
+  * Remove any local database users:
+   # `mysql -h <host> -u <user> -p`
+   # `use mysql`
+   # `select * from user;` 
+   # `drop user "<user_name>"@"%";`
+   # `drop user "<user_name>"@"localhost";`
   * Remove the test case database:
    # `mysql -h <host> -u <user> -p`
    # `drop database autotest;`

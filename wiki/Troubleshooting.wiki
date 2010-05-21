@@ -7,6 +7,16 @@ This troubleshooting page should help resolve the most common initial installati
 
 == Database ==
 
+=== Unable to logon to the database ===
+*Problem:* The database may not have been set up for use.
+
+*Solution:*
+  * Set up the database with a root password:
+   # `mysql -u root`
+   # `mysql> use mysql`
+   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';`
+   # `mysql> FLUSH PRIVILEGES;`
+
 === When connecting to the GUI for the first time, I am prompted to download a file ===
 *Problem:* The index.php script isn't being correctly processed by your web server.
 

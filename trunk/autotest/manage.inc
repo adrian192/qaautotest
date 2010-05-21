@@ -891,7 +891,7 @@ function make_management_left () {
 		<tr><th colspan=2 align=left>Update test database from .csv</th></tr>
 		<tr><td colspan=2 align=left>* Choose a .csv file containing test cases to upload to the database.</td></tr>
 		<tr><td colspan=2 align=left>* Duplicate tests in .csv will be ignored.</td></tr>
-		<tr><td colspan=2 align=left>* Tests marked as XFAIL must have a defect ID after the runAsRoot flag</td></tr>
+		<tr><td colspan=2 align=left>* Tests marked as XFAIL must have a defect ID after the run_as_root flag.</td></tr>
 		<!--<tr><td colspan=2 align=left><ul>
 			<li>Choose a .csv file containing test cases to upload to the database.</li>
 			<li>Duplicate tests in the .csv file will be ignored.</li>
