@@ -138,7 +138,7 @@ def main():
     create_ini(target_dir, input_array[0], input_array[1], input_array[2], input_array[3])
     print("Installation successful!")
     print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[1]))
-    print("For troubleshooting tips, go to http://%s/%s/help.html" %(input_array[0], input_array[1]))
+    print("For troubleshooting tips, go to http://code.google.com/p/qaautotest/wiki/Troubleshooting")
     
 def get_input():
     input = []
