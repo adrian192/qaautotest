@@ -1,0 +1,30 @@
+#summary Detailed solutions to overcome most problems.
+
+= Introduction =
+
+This troubleshooting page should help resolve the most common initial installation and usage issues.  It will be updated as time goes by and as new issues are uncovered.
+
+
+== Database ==
+
+=== When connecting to the GUI for the first time, I am prompted to download a file ===
+*Problem:* The index.php script isn't being correctly processed by your web server.
+
+*Solution:*
+  * Try installing the following packages: `libapache2-mod-php5 php5-cli php5-common php5-cgi`
+  * Verify that index.php is identified as being a valid index file in your apache/httpd configuration file.
+
+=== ERROR 2003 connecting to the database ===
+*Problem:* Unable to connect to the database over the network.
+
+*Solution:*
+  * Make sure the firewall on the database server permits access to the SQL server.
+  * Configure the MySQL server to allow external access to the database:
+   # Open your `my.cnf` file (`/etc/mysql/my.cnf` or `/etc/my.cnf`).
+   # If the line `skip-networking` is present, comment it out.
+   # If the line `bind-address = 127.0.0.1` is present, change `127.0.0.1` to your machine's public IP address.
+   # Restart the MySQL server: `service mysql restart` or `/etc/init.d/mysql restart`.
+
+== Harness ==
+
+No issues yet.
