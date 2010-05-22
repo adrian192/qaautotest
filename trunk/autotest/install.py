@@ -192,12 +192,16 @@ def get_input():
     
 def pre_flight_check(input):
     target_dir = os.path.join(input[5], input[2])
+    if not os.path.exists(input[5]):
+        print("The provided web root %s doesn't exist." %input[5])
+        sys.exit(1)
     if not os.access(input[5], os.W_OK):
         print("Write access is not allowed to the web root %s" %input[5])
         if os.geteuid() != 0:
             print("Rerun using sudo.")
             sys.exit(1)
         print("Add write access to the directory and try again.")
+        sys.exit(1)
     if os.path.exists(target_dir):
         print("The installation directory %s already exists." %target_dir)
         print("Remove the directory or specify a new database name.")
