@@ -899,7 +899,7 @@ function make_management_left () {
 		</ul></td></tr>-->
 		<form method="POST" enctype="multipart/form-data" action="<?=$_SERVER['PHP_SELF']?>?frame=management_right<?php echo "&manage_id={$select}"?>" target="management_right">
 		<input type="hidden" name="MAX_FILE_SIZE" value="100000" />
-		<tr><th colspan=2 align=left>.csv File to upload:<br><input type="file" name="upfile">
+		<tr><th colspan=2 align=left>.csv file to upload:<br><input type="file" name="upfile">
 		</th></tr>
 		<tr><td colspan=2 align=left>
 		<input type="checkbox" name="overrideDB" value="1" />Replace database values<br>

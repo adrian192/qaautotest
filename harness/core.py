@@ -72,6 +72,11 @@ def get_options():
     parser.add_option("--level", action="store", type="string",
                       dest="log_level", help="The log level for the harness "
                       "logger, e.g. logging.DEBUG, 20, etc.")
+    parser.add_option("--threads", action="store", type="int",
+                      default=1, dest="threads", help="If unset, the tests "
+                      "will be run serially, i.e. in a single-threaded mode.  "
+                      "To run tests in parallel, set the number of threads to "
+                      "use.  Each test case will be run in its own thread.")
     parser.add_option("--iterations", action="store", type="int",
                       dest="iterations", help="If unset, the specified tests "
                       "will be run once.  Otherwise, the tests are repeated "

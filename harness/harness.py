@@ -27,7 +27,7 @@ def main():
     harness = Harness(config["log_dir"], config["log_level"])
     harness.initialize_database(os.path.join(os.path.split(os.path.abspath(__file__))[0], "database.ini"))
     harness.add_tests(config["test_dir"], config["tests"])
-    harness.run_tests(config, config["store_to_database"], config["stop_on_fail"], config["iterations"])
+    harness.run_tests(config, config["store_to_database"], config["stop_on_fail"], config["iterations"], config["threads"])
     failures = harness.print_to_screen()
     if failures > 0:
         sys.exit(1)
@@ -291,7 +291,7 @@ class Harness(object):
         return test_list
     
     def run_tests(self, config=None, store_to_database=False, 
-                  stop_on_fail=False, iterations=1, threads=0):
+                  stop_on_fail=False, iterations=1, threads=1):
         directives = profile.SuiteDirectives(config)
         if not directives.start():
             self.log.error("One of the pre-suite directives failed.  The tests "
@@ -313,34 +313,29 @@ class Harness(object):
         
         ######################################################################
         # Multi-threaded test execution
-        # BUGBUG: Doesn't work right now
         else:
-            while True:  # Break if not loop
+            self.thread_list = []
+            for i in range(iterations):
+                if iterations > 1:
+                    self.log.info("Executing test iteration %s" %(i + 1))
                 for item in self.test_list:
-                    tid = threading.Thread(None, self.runTest, None, (item, varObj))
-                    self.threadList.append(tid)
+                    tid = threading.Thread(None, self.__execute_test_case,
+                                           None, (config, item))
+                    self.thread_list.append(tid)
                     tid.start()
-                    # If we are doing threading, when we hit the maximum thread list 
-                    # wait and let tests complete before starting more threads.
-                    while (len(self.threadList) >= self.thread):
-                        self.__checkThreadTests()
-                        if item == testList[-1]:
+                    # If we are doing threading, when we hit the maximum
+                    # number of threads, wait and let tests complete before
+                    # starting more threads.
+                    while len(self.thread_list) >= threads:
+                        self.__check_threaded_tests()
+                        if item == self.thread_list[-1]:
                             # If the test we just started is the last test, get 
                             # out of this while loop.
                             break
                         time.sleep(1)
-                while (len(self.threadList) > 0):
-                    #self.log.error("Current threadList = %s"%len(self.threadList))
-                    for tRun in self.threadList:
-                        if not tRun.isAlive():
-                            self.threadList.pop(self.threadList.index(tRun))
+                while len(self.thread_list) > 0:
+                    self.__check_threaded_tests()
                     time.sleep(1)
-            while (len(self.threadList) > 0):
-                #self.log.error("Current threadList = %s"%len(self.threadList))
-                for tRun in self.threadList:
-                    if not tRun.isAlive():
-                        self.threadList.pop(self.threadList.index(tRun))
-                time.sleep(1)
         
         ######################################################################
         # Run the post-test check and report the results to the database.
@@ -509,12 +504,12 @@ class Harness(object):
             return False
         return True
     
-    def __checkThreadTests(self):
-        """ If we are running multiple thread, check if threads are done, if
-        it is pop it from the threadList. """
-        for tRun in self.threadList:
-            if not tRun.isAlive():
-                self.threadList.pop(self.threadList.index(tRun))
+    def __check_threaded_tests(self):
+        """ If we are running multiple thread, check if threads are done.  If
+        it is, pop it from the thread_list. """
+        for this_thread in self.thread_list:
+            if not this_thread.isAlive():
+                self.thread_list.pop(self.thread_list.index(this_thread))
 
     def __process_result(self, test_status):
         """ This will process the test results.  The return value from the test 
