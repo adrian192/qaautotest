@@ -175,9 +175,12 @@ def get_input():
     root_password = getpass.getpass("Enter the password for the root user: ")
     input.append(root_password)
     
-    webroot = raw_input("Enter the name of your web root [/var/www/html]: ")
+    default_webroot = "/var/www"
+    if os.path.exists("/var/www/html"):
+        default_webroot = "/var/www/html"
+    webroot = raw_input("Enter the name of your web root [%s]: " %default_webroot)
     if webroot == "":
-        webroot = "/var/www/html"
+        webroot = default_webroot
     input.append(webroot)
     
     local_user = raw_input("Create a normal user for the database [tester]: ")
