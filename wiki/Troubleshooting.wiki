@@ -7,29 +7,39 @@ This troubleshooting page should help resolve the most common initial installati
 
 == Database ==
 
-=== Unable to logon to the database ===
-*Problem:* The database may not have been set up for use.
-
-*Solution:*
-  * Set up the database with a root password:
-   # `mysql -u root`
-   # `mysql> use mysql`
-   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';`
-   # `mysql> FLUSH PRIVILEGES;`
-
 === When connecting to the GUI for the first time, I am prompted to download a file ===
 *Problem:* The index.php script isn't being correctly processed by your web server.
 
 *Solution:*
   * Try installing the following packages: `libapache2-mod-php5 php5-cli php5-common php5-cgi`
   * Verify that index.php is identified as being a valid index file in your apache/httpd configuration file.
+  * After making these changes, you must restart your web server, e.g. `service httpd restart` or `/etc/init.d/apache2 restart`
+  * If you still get a download prompt after doing the above, and if you are usign Google's Chrome web browser, clear your browser's cache and reload the page.
 
 === Web page doesn't load ===
 If, when you connect to `http://localhost/autotest`, you get an error indicating that the page cannot load, there are two likely explanations:
   * The web server isn't started.  Check the status of your web server with a command such as `service httpd status` or `/etc/init.d/apache2 status`.
   * The installation target directory wasn't the web root.  The default web root in the installation script is `/var/www/html`.  This is the default for CentOS.  Ubuntu uses `/var/www` as its default web root.  Make sure you have the correct web root configured.
 
-=== ERROR 2003 connecting to the database ===
+=== ERROR 1045, Access denied for user 'root'@'localhost' (using password: YES) ===
+*Problem:* The password you have entered for administering the SQL server is wrong.
+
+*Solution:*
+  * When you install the Autotest database, a new user account is created just for this database.  The password may (should) be different than your root password.  Make sure you are using the correct password.
+  * If you have forgotten your root password, the MySQL site has details on [http://dev.mysql.com/doc/refman/5.1/en/resetting-permissions.html resetting your root password].
+  * If you have forgotten the password used for administering your Autotest database, you can reset the password at the SQL server console by doing the following:
+   # `mysql -u root`
+   # `mysql> use mysql`
+   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='<autotest_local_user>';`
+   # `mysql> FLUSH PRIVILEGES;`
+
+=== ERROR 2002, Can't connect to local MySQL server through socket ===
+*Problem:* The MySQL server is not installed or the service isn't running.
+
+*Solution:*
+  * Review the page on [http://code.google.com/p/qaautotest/wiki/MySQLSetup installing MySQL server] to make sure your SQL server is fully installed and the services are running properly.
+
+=== ERROR 2003, Can't connect to MySQL server on 'localhost' ===
 *Problem:* Unable to connect to the database over the network.
 
 *Solution:*

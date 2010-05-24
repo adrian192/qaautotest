@@ -6,33 +6,22 @@ This page describes how to install the test database on your machine.
 
 == Requirements ==
   * Linux host (tested with Ubuntu 10.04)
-  * Local installation of MySQL (tested with 5.1.41)
+  * Local installation of MySQL server and client libraries (tested with 5.1.41-3)
   * Python 2.6 (tested with 2.6.5)
   * MySQL client library for Python (tested with 1.2.2; http://sourceforge.net/projects/mysql-python/)
   * PHP (tested with 5.3.2-1)
   * Web server running locally (tested with Apache/2.2.14)
 
 == Preparing the MySQL Server ==
-==== Know the root password for MySQL ====
-If this is an existing database server with a known root password, you may skip this step.  If your MySQL server is a new installation, you must first set a root password.  To do that, perform the following steps:
-  * Log on to your MySQL server as root.
-  * From a console, issue the following commands:
-   # `mysql -u root`
-   # `mysql> use mysql`
-   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';`
-   # `mysql> FLUSH PRIVILEGES;`
-
-==== Configure your MySQL server to allow network access ====
-By default, MySQL does not allow remote access.  You must allow remote access by performing the following:
-   # Open your `my.cnf` file (`/etc/mysql/my.cnf` or `/etc/my.cnf`).
-   # If the line `skip-networking` is present, comment it out.
-   # If the line `bind-address = 127.0.0.1` is present, change `127.0.0.1` to your machine's public IP address.
-   # Restart the MySQL server: `service mysql restart` or `/etc/init.d/mysql restart`.
-
+If this is a new installation of MySQL or if it is the first time the database is being used, follow the instructions described in [http://code.google.com/p/qaautotest/wiki/MySQLSetup MySQL setup] for details on preparing the database.  If you are an experienced MySQL administrator, you should make sure you have prepared your database as follows:
+  * You must know the root password for the database.
+  * The database must be accessible over the network.  This will allow remote machines to access the test database through a web browser.
+  * You must have all of the packages installed described in the "requirements" section above.
+  * During the installation, a new user will be created to administer the Autotest database.  Identify a user and password you'd like to use for this purpose.
 
 == Installation ==
   * Check out the source code.
-  * Read through the [http://code.google.com/p/qaautotest/wiki/Troubleshooting troubleshooting] section to ensure your MySQL server is prepared to host the test database.
+  * Read through the [http://code.google.com/p/qaautotest/wiki/MySQLSetup MySQL setup] section to ensure your MySQL server is prepared to host the test database.
   * From the autotest directory, run `install.py` as root.
   * Default values are provided.  Type enter to accept the defaults or enter your own custom value.
 {{{
