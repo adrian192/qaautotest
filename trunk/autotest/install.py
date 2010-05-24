@@ -295,7 +295,7 @@ class CreateTestDatabase(object):
         rc = self.dba.update(user_string_1)
         rc = self.dba.update(user_string_2)
         
-        print("Setting up database privileges for the test user \"%s\"." %user)
+        print("Setting up database privileges for the local user \"%s\"." %user)
         rc = self.dba.update(priv_string)
         if rc == 1:
             print("Unable to setup remote privileges for \"%s\" user." %user)
