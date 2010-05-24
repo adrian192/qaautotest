@@ -101,7 +101,7 @@ function writeSuiteToCSV ($suiteName) {
 	}
 	$myFile = "./csv/{$suiteName}.csv";
 	$fh = fopen ($myFile, "w") or die ("Can't open file.");  // Replace old file.
-	fwrite ($fh, "File,Class,targetVersion,runFlag,runAsRoot,xfailBugID\n");
+	fwrite ($fh, "file_name,test_class,target_version,run_flag,run_as_root,xfail_bug_id\n");
 	while ($row = mysql_fetch_assoc ($result)) {
 		$stringData = "{$row['File']},{$row['Class']},{$row['targetVersion']},{$row['runFlag']},{$row['runAsRoot']},{$row['xfailBugID']}\n";
 		fwrite ($fh, $stringData);
@@ -122,7 +122,7 @@ function writeAllTestCSV () {
 	}
 	$myFile = "./csv/allTests.csv";
 	$fh = fopen ($myFile, "w") or die ("Can't open file.");  // Replace old file.
-	fwrite ($fh, "File,Class,targetVersion,runFlag,runAsRoot,xfailBugID\n");
+	fwrite ($fh, "file_name,test_class,target_version,run_flag,run_as_root,xfail_bug_id\n");
 	while ($row = mysql_fetch_assoc ($result)) {
 		$stringData = "{$row['File']},{$row['Class']},{$row['targetVersion']},{$row['runFlag']},{$row['runAsRoot']},{$row['xfailBugID']}\n";
 		fwrite ($fh, $stringData);
