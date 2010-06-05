@@ -175,7 +175,7 @@ def get_input():
     root_password = getpass.getpass("Enter the password for the root user: ")
     input.append(root_password)
     
-    default_webroot = "/var/www"
+    default_webroot = "/var/www" #get_web_root
     if os.path.exists("/var/www/html"):
         default_webroot = "/var/www/html"
     webroot = raw_input("Enter the name of your web root [%s]: " %default_webroot)
@@ -193,6 +193,26 @@ def get_input():
     
     return input
     
+def get_web_root():
+    default_webroot = "/var/www"
+    if os.name == "posix":
+        if os.path.exists("/var/www/html"):
+            default_webroot = "/var/www/html"
+    elif sys.platform == "win32":
+        try:
+            iis_path = os.environ["SystemDrive"] + os.sep + \
+                       os.path.join("inetpub", "wwwroot")
+            apache_path = os.path.join(os.environ["ProgramFiles"],
+                                       "Apache Software Foundation",
+                                       "Apache2.2", "htdocs")
+            if os.path.exists(iispath):
+                default_webroot = iispath
+            elif os.path.exists(apache_path):
+                default_webroot = apache_path
+        except:
+            return default_webroot
+    return default_webroot
+
 def pre_flight_check(input):
     target_dir = os.path.join(input[5], input[2])
     if not os.path.exists(input[5]):
