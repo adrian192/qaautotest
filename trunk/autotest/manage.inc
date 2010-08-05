@@ -482,8 +482,13 @@ function mgnt_right_add_test () {
 	$tempFilePath = $_FILES['upfile']['tmp_name'];
 	// If we don't want to save the file, just operate on the tempFilePath
 	// To save the file, move the temp file to the target_path
-	$fileArray = file ($tempFilePath, FILE_SKIP_EMPTY_LINES|FILE_TEXT);
-	if (empty ($fileArray)) {
+	if ($tempFilePath) {
+		$fileArray = file ($tempFilePath, FILE_SKIP_EMPTY_LINES|FILE_TEXT);
+		if (empty ($fileArray)) {
+			echo ("Upload a .csv file from the left frame.");
+			return;
+		}
+	} else {
 		echo ("Upload a .csv file from the left frame.");
 		return;
 	}
