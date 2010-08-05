@@ -131,12 +131,23 @@ def main():
     os.chmod(os.path.join(target_dir, "csv"), stat.S_IRWXU|stat.S_IRWXG|stat.S_IRWXO)
     os.system("cp -p *.inc *.php %s" %target_dir)
     create_ini(target_dir, input_array[0], input_array[1], input_array[2],
-               input_array[6], input_array[7])
+               input_array[6], input_array[7], input_array[8])
     print("Installation successful!")
     print("Connect to the GUI at http://%s/%s" %(input_array[0], input_array[2]))
     print("For troubleshooting tips, go to http://code.google.com/p/qaautotest/wiki/Troubleshooting")
     
 def get_input():
+    """ Generates and returns a list with the following components:
+    0: The host on which MySQL is installed.
+    1: The port address through which one connects to MySQL.
+    2: The name of the database to create.
+    3: The MySQL root user name.
+    4: The MySQL root user password.
+    5: The webroot directory.
+    6: A new user account that will administer the test database.
+    7: The password for the test database user.
+    8: IP addresses of administrative machines.
+    """
     input = []
     sql_host = ""
     port = ""
@@ -146,6 +157,7 @@ def get_input():
     webroot = ""
     local_user = ""
     local_password = ""
+    admin_machines = ""
     
     sql_host = raw_input("Enter the MySQL host name [localhost]: ")
     if sql_host == "":
@@ -191,6 +203,11 @@ def get_input():
     local_password = getpass.getpass("Create a password for the normal user: ")
     input.append(local_password)
     
+    admin_machines = raw_input("Enter a comma separated list of admin IPs [127.0.0.1]: ")
+    if admin_machines == "":
+        admin_machines = "127.0.0.1"
+    input.append(admin_machines)
+    
     return input
     
 def get_web_root():
@@ -231,13 +248,14 @@ def pre_flight_check(input):
         sys.exit(1)
     return True
     
-def create_ini(target_dir, host, port, db_name, user, password):
+def create_ini(target_dir, host, port, db_name, user, password, admin_ips):
     file = open(os.path.join(target_dir, "database.ini"), "wb")
     file.write("[database]\n")
     file.write("host = %s\n" %host)
     file.write("port = %s\n" %port)
     file.write("db_name = %s\n" %db_name)
     file.write("user = %s\n" %user)
+    file.write("admin = %s\n" %admin_ips)
     file.write("password = %s\n" %password)
     file.write("testlink = disabled\n")
     file.close()
