@@ -1,5 +1,11 @@
 import logging
-import MySQLdb
+try:
+    import MySQLdb
+except ImportError:
+    import sys
+    print("Error: The package python-mysqldb is not installed.  Unable "
+          "to continue.")
+    sys.exit(1)
 
 class dbaccess:
     """ This class provides wrappers around database access commands from
