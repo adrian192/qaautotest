@@ -84,6 +84,12 @@ function get_management_list () {
 	//$info[3]['name'] = 'Old test suite management';
 	$info[4]['name'] = 'Show all tests';
 	$info[5]['name'] = 'Test to suite matrix';
+	
+	$ip = $_SERVER['REMOTE_ADDR'];
+	$ini_array = parse_ini_file("database.ini");
+	if (in_array($ip, split(',', $ini_array["admin"]))) {
+		$info[6]['name'] = 'Database admin';
+	}
 	return $info;
 }
 
@@ -1115,12 +1121,15 @@ function make_management_left () {
 		echo ("This page contains a list of all tests entered into the database.");
 	} elseif ($select == 5) {
 		echo ("This page shows all tests in the database and the suite(s) to which the tests are assigned. ");
-		echo ("Tests that are not assigned to any suite are be highlighted.");
+		echo ("Tests that are not assigned to any suite are highlighted.");
 		echo ("<table>");
 		echo ("<tr><th>LEGEND</th></tr>");
 		echo ("<tr bgcolor=\"{$COLORS['LIGHTBLUE']}\"><th>File Name</th></tr>");
 		echo ("<tr bgcolor=\"{$COLORS['PORANGE']}\"><th>Not in suite</th></tr>");
 		echo ("</table>");
+	} elseif ($select == 6) {
+		// Simple display of all tests in autotest
+		echo ("I don't do anything yet!!!.");
 	}
 	?>
 	</body>
