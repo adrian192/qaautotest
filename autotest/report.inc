@@ -182,7 +182,7 @@ function make_report_left () {
 		<?php fileFilterHTML ("multiple");?>
 		</td></tr>
 		<tr><td colspan=2>
-		<br/>File Name Filter<br/>
+		<br/>Test Name Filter<br/>
 		<?php testFilterHTML ("multiple");?>
 		</td></tr>
 		<tr><td>
@@ -446,9 +446,9 @@ function make_report_right ($rightArray) {
 			echo "NO REPORT SELECTED";
 		}
 	} else {
-		foreach ($rightArray as $key => $value) {
-			echo "{$key} => {$value}\n";
-		}
+		//foreach ($rightArray as $key => $value) {
+		//	echo "{$key} => {$value}\n";
+		//}
 		echo "Please select a report";
 	}
 	?>
