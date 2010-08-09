@@ -7,11 +7,11 @@ This troubleshooting page should help resolve the most common initial installati
 
 == Database ==
 
-=== When connecting to the GUI for the first time, I am prompted to download a file ===
+=== When connecting to the GUI for the first time, I am prompted to download a file or I see just a list of files ===
 *Problem:* The index.php script isn't being correctly processed by your web server.
 
 *Solution:*
-  * Try installing the following packages: `libapache2-mod-php5 php5-cli php5-common php5-cgi`
+  * Try installing the following packages: *Ubuntu:* `libapache2-mod-php5 php5-cli php5-common php5-cgi`.  *CentOS:* php.x86_64
   * Verify that index.php is identified as being a valid index file in your apache/httpd configuration file.
   * After making these changes, you must restart your web server, e.g. `service httpd restart` or `/etc/init.d/apache2 restart`
   * If you still get a download prompt after doing the above, and if you are usign Google's Chrome web browser, clear your browser's cache and reload the page.
