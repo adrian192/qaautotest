@@ -706,15 +706,36 @@ def get_local_ip():
         try:
             return socket.gethostbyname(socket.gethostname())
         except:
-            return ""
-    import fcntl
-    import struct
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(
-        s.fileno(),
-        0x8915,  # SIOCGIFADDR
-        struct.pack('256s', "eth0"[:15])
-    )[20:24])
+            return "unknown"
+    # On Linux, we will determine what interfaces exist.  We'll then try to
+    # get the IP address assigned to the interface.  lo, the loopback interface,
+    # will be omitted.
+    try:
+        import fcntl
+        import struct
+        net_file = open("/proc/net/dev", "r")
+        proc_net_dev = net_file.read()
+        net_file.close()
+        find_what = re.compile(r"(\w+):")
+        all_nets = re.findall(find_what, proc_net_dev, re.M)
+        for i in all_nets:
+            if i == "lo":
+                continue
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                return socket.inet_ntoa(fcntl.ioctl(
+                    s.fileno(),
+                    0x8915,  # SIOCGIFADDR
+                    struct.pack('256s', i[:15])
+                )[20:24])
+            # IOError gets raised if the interface doesn't have an IP address
+            # assigned.  This is perfectly normal when a client has multiple
+            # interfaces and some may not actually be in use currently.
+            except IOError:
+                continue
+    except:
+        return "unknown"
+    return "unknown"
 
 
 if __name__ == "__main__":
