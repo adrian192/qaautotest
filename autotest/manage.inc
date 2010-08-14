@@ -309,7 +309,7 @@ function show_autoTestInDB () {
         $testCount += 1;
     }
     mysql_free_result ($result);
-    echo "<tr><th>Total Number of Tests in DB</th><td>{$testCount}</td></tr>";
+    echo "<tr><th colspan=6 align=\"left\">Total Number of tests in the database: {$testCount}</th></tr>";
     ?>
     </table>
     <?php
@@ -724,7 +724,7 @@ function mgnt_right_suite_page () {
             if ($gsName == "") {
                 continue;
             }
-            echo "<a href=./csv/{$gsName}.csv>{$gsName}.csv</a><p>";
+            echo "<a href=./csv/{$gsName}.csv>{$gsName}.csv</a><br>";
             writeSuiteToCSV ($gsName);
         }
     }
@@ -1136,13 +1136,13 @@ function make_management_left () {
         // Simple display of all tests in autotest
         ?>
         <strong>Select a table in the database to administer:</strong><br />
-        <form action="<?=$_SERVER['PHP_SELF']?>?frame=management_right" method="post" target="management_right" name="Management_Control">
+        <form action="<?=$_SERVER['PHP_SELF']?>?frame=management_right<?php echo "&manage_id={$select}"?>" target="management_right" method="post">
         <tr><td colspan=2>
-        <input type='Radio' Name='administer' value='Suites' <?PHP print $suites; ?>>Suites<br />
-        <input type='Radio' Name='administer' value='Test Cases' <?PHP print $test_cases; ?>>Test Cases<br />
-        <input type='Radio' Name='administer' value='Test Results' <?PHP print $test_results; ?>>Test Results<br /><br />
+        <input type='radio' name='administer' value='test_suites'<?PHP print $suites; ?>>Suites<br />
+        <input type='radio' name='administer' value='test_cases'<?PHP print $test_cases; ?>>Test Cases<br />
+        <input type='radio' name='administer' value='test_results'<?PHP print $test_results; ?>>Test Results<br /><br />
         </td></tr>
-        <tr><td colspan=2><INPUT TYPE = "Submit" Name = "Submit1"  VALUE = "Submit"></td></tr>
+        <tr><td colspan=2><input type="submit" name="submit" value="Submit"></td></tr>
         </form>
     <?php
     }
@@ -1154,10 +1154,39 @@ function make_management_left () {
 }
 
 function administer_database () {
-    if (!$_GET['administer']) {
+    if (!$_POST['administer']) {
         echo("Select a database table to administer.");
         return;
     }
+    $selected_radio = $_POST['administer'];
+    if ($selected_radio == "test_suites") {
+        $all_suites = mgnt_get_suite_names();
+        foreach ($all_suites as $this_suite) {
+            echo($this_suite);
+            echo("<br />");
+        }
+        return;
+    } elseif ($selected_radio == "test_cases") {
+        $query = "select File, Class from auto_test_case order by File, Class";
+        connect_db();
+        $result = mysql_query($query);
+        echo("<table border=1>");
+        echo("<tr><th>File Name</th><th>Test Class</th></tr>");
+        while ($row = mysql_fetch_assoc ($result)) {
+            echo("<tr bgcolor={$COLORS['PASTEY']}>");
+            echo("<td>".$row['File']."</td>");
+            echo("<td>".$row['Class']."</td>");
+            echo("</tr>");
+            $testCount += 1;
+        }
+        echo("</table>");
+        mysql_free_result($result);
+        return;
+    } elseif ($selected_radio == "test_results") {
+        echo($selected_radio);
+        return;
+    }
+    return;
 }
 
 function make_management_right () {
