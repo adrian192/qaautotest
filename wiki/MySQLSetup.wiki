@@ -53,7 +53,7 @@ sudo service mysql restart
 
   * Install MySQL and supporting packages:
 {{{
-yum install mysql.x86_64 mysql-server.x86_64 MySQL-python.x86_64 httpd.x86_64 mysql php.x86_64
+yum install mysql.x86_64 mysql-server.x86_64 MySQL-python.x86_64 httpd.x86_64 mysql php.x86_64 php-mysql.x86_64
 }}}
 
   * Enable the MySQL service:
