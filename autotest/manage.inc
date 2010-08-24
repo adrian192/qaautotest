@@ -540,7 +540,7 @@ function mgnt_right_suite_page () {
         if ($_POST['suiteNameList']) {
             $_GET['suiteNameList'] = $_POST['suiteNameList'];
         } elseif (!$_GET['newSuiteName']) {
-            Echo "No test suite selected.";
+            echo "No test suite selected.";
         } else {
             echo "Please add tests to new test suite '{$_GET['newSuiteName']}' from the left frame.";
         }
@@ -1154,36 +1154,82 @@ function make_management_left () {
 }
 
 function administer_database () {
+    global $COLORS;
     if (!$_POST['administer']) {
         echo("Select a database table to administer.");
         return;
     }
     $selected_radio = $_POST['administer'];
     if ($selected_radio == "test_suites") {
+        echo "<table border=1 cellpadding=2>";
+        echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}&suiteName={$_GET['suiteName']}\" target=\"management_right\" method=\"post\" name=\"suite_case_delete\">\n";
+        echo "<input type=\"hidden\" name=\"delSuiteItem\" value=1/>\n";
+        // echo "<tr><th>Delete</th><th>Suite Name</th></tr>\n";
+        // A check all box
+        echo "<tr><td align=center>\n";
+        echo "<input type=\"checkbox\" name=\"checkall\""; 
+        echo "onclick=\"window.parent.checkAll(window.parent.management_right.document.suite_case_delete, window.parent.management_right.document.suite_case_delete.checkall);\"/></td><th>Suite Name</th></tr>\n";
+        // Now create the check box for each suite.
         $all_suites = mgnt_get_suite_names();
-        foreach ($all_suites as $this_suite) {
-            echo($this_suite);
-            echo("<br />");
+        $count = 0;
+	foreach ($all_suites as $this_suite) {
+	    if (($count % 2) == 0) {
+		$bgc = $COLORS['LIGHTBLUE'];
+	    } else {
+		$bgc = $COLORS['WHITE'];
+	    }
+	    echo "<tr bgcolor=\"$bgc\">";
+            echo "<td align=center><input type=\"checkbox\" name=\"del[]\" value=\"$this_suite\"/></td>";
+            echo "<td>$this_suite</td>";
+            echo "</tr>\n";
+            $count += 1;
         }
+        echo "<tr><td colspan=10>\n";
+        echo "<input type=\"submit\" name=\"RmStuffSuite\" value=\"Delete suite(s)\" /></td></tr>\n";
+        echo "</form>\n";
+        echo "</table>\n";
+
+
+	// To delete a suite, do the following:
+	// "delete from auto_suite_list where suite_name=\"<suite_name>\""
+	// "delete from auto_test_suites where auto_suite_name=\"both\""
+	// Now, remove the ./csv/<suite>.csv file
         return;
+    
     } elseif ($selected_radio == "test_cases") {
+	echo "<table border=1 cellpadding=2>";
+        echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}&suiteName={$_GET['suiteName']}\" target=\"management_right\" method=\"post\" name=\"suite_case_delete\">\n";
+        echo "<input type=\"hidden\" name=\"delSuiteItem\" value=1/>\n";
+        // A check all box
+        echo "<tr><td align=center>\n";
+        echo "<input type=\"checkbox\" name=\"checkall\""; 
+        echo "onclick=\"window.parent.checkAll(window.parent.management_right.document.suite_case_delete, window.parent.management_right.document.suite_case_delete.checkall);\"/></td><th>File Name</th><th>Test Class</th></tr>\n";
+        // Now create the check box for each suite.
         $query = "select File, Class from auto_test_case order by File, Class";
         connect_db();
         $result = mysql_query($query);
-        echo("<table border=1>");
-        echo("<tr><th>File Name</th><th>Test Class</th></tr>");
-        while ($row = mysql_fetch_assoc ($result)) {
-            echo("<tr bgcolor={$COLORS['PASTEY']}>");
+        $count = 0;
+	while ($row = mysql_fetch_assoc($result)) {
+	    if (($count % 2) == 0) {
+		$bgc = $COLORS['LIGHTBLUE'];
+	    } else {
+		$bgc = $COLORS['WHITE'];
+	    }
+	    echo "<tr bgcolor=\"$bgc\">";
+            echo "<td align=center><input type=\"checkbox\" name=\"del[]\" value=\"$this_suite\"/></td>";
             echo("<td>".$row['File']."</td>");
             echo("<td>".$row['Class']."</td>");
             echo("</tr>");
-            $testCount += 1;
+            $count += 1;
         }
-        echo("</table>");
-        mysql_free_result($result);
+        echo "<tr><td colspan=10>\n";
+        echo "<input type=\"submit\" name=\"RmStuffSuite\" value=\"Delete test(s)\" /></td></tr>\n";
+        echo "</form>\n";
+        echo "</table>\n";
+	mysql_free_result($result);
         return;
     } elseif ($selected_radio == "test_results") {
-        echo($selected_radio);
+        echo($selected_radio." not implemented yet.");
         return;
     }
     return;
