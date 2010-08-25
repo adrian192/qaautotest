@@ -198,16 +198,16 @@ function make_report_left () {
 		// This is the suite report page.
 		?>
 		<table>
-		<tr><th>Suite Report Filters</th></tr>
-		<tr><th colspan=2>Select Suite</th></tr>
+		<tr><th colspan=2 align="center">Suite Report Filters</th></tr>
+		<tr><th colspan=2 align="left">Select a suite</th></tr>
 		<tr><td colspan=2>
 		<?php suiteListHTML ();?>
 		</td></tr>
-		<tr><th colspan=2>Select a specific machine</th></tr>
+		<tr><th colspan=2 align="left">Select a test machine</th></tr>
 		<tr><td colspan=2>
 		<?php make_machine_filter ();?>
 		</td></tr>
-		<tr><th colspan=2>Result History</th></tr>
+		<tr><th colspan=2 align="left">Results history</th></tr>
 		<tr><td colspan=2>
 		<select name=SuiteReportDepth>
 		<?php
@@ -763,8 +763,12 @@ function report_suite_result () {
 	foreach ($jobList as $job) {
 		$etime = date ('m/d/y H:i:s', $jobArray[$job]['startTime']);
 		$endTime = date ('m/d/y H:i:s', $jobArray[$job]['endTime']);
-		$detaTime = $jobArray[$job]['endTime']-$jobArray[$job]['startTime'];
-		echo "<th width=18>Job# {$job}<hr />{$etime}<hr />+{$detaTime} sec</th>";
+		if ($jobArray[$job]['endTime'] == $jobArray[$job]['startTime']) {
+			$detaTime = 0;
+		} else {
+			$detaTime = $jobArray[$job]['endTime']-$jobArray[$job]['startTime'];
+		}
+		echo "<th width=18>Job ID: {$job}<hr />{$etime}<hr />{$detaTime} sec</th>";
 	}
 	echo "</tr>";
 	foreach ($testArray as $testFile => $testItems) {

@@ -603,9 +603,9 @@ class Harness(object):
             return False
         
         # insert into the job table and get back the insert ID, the insertID is the new jobID
-        add_job_query = "insert into auto_test_jobs (startTime, status, version, jobHTML, primeTestUnit, suiteID) "+\
-                        "values (%s, '%s', '%s', '%s', '%s', %s)" \
-                        %(self.test_start_time, "running", "1", "none", get_local_ip(), self.suite_id)
+        add_job_query = "insert into auto_test_jobs (startTime, endTime, status, version, jobHTML, primeTestUnit, suiteID) "+\
+                        "values (%s, %s, '%s', '%s', '%s', '%s', %s)" \
+                        %(self.test_start_time, self.test_end_time, "done", "1", "none", get_local_ip(), self.suite_id)
         
         db_rc = self.dba.update(add_job_query)
         if db_rc != 0: # If we added at least 1 row to the table.
