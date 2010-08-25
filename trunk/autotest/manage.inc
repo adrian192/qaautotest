@@ -1116,7 +1116,6 @@ function make_management_left () {
         </select>
         </td></tr>
         <tr><td colspan=2><input type="submit" name="UpdateSuite" value="Add tests to suite" /></td></tr>
-        <!--<tr><td colspan=2>Note: Use the 2 TempUserSuite if you need to create your own csv files.</td></tr>-->
         </form>
     <?php
         // Second we will have a list of test items in a checkbox list.
@@ -1154,12 +1153,13 @@ function administer_database() {
 	delete_suites($_POST["del_suites"]);
 	return;
     } elseif ($_POST["del_tests"]) {
-	echo($_POST["del_tests"]);
+	delete_test_cases($_POST["del_tests"]);
 	return;
     } elseif ($_POST["del_results"]) {
 	echo($_POST["del_results"]);
 	return;
-    } elseif (!$_POST['administer']) {
+    }
+    if (!$_POST['administer']) {
         echo("Select a database table to administer.");
         return;
     }
@@ -1193,7 +1193,7 @@ function display_test_suite_table_with_checkboxes() {
         if (($count % 2) == 0) {
 	    $bgc = $COLORS['LIGHTBLUE'];
         } else {
-    	$bgc = $COLORS['WHITE'];
+    	    $bgc = $COLORS['WHITE'];
         }
         echo "<tr bgcolor=\"$bgc\">";
         echo "<td align=center><input type=\"checkbox\" name=\"del_suites[]\" value=\"$this_suite\"/></td>";
@@ -1261,27 +1261,41 @@ function delete_test_cases($tests) {
     $count = 0;
     connect_db();
     foreach ($tests as $this_test) {
-	$del_from_list = "delete from auto_suite_list where suite_name=\"$this_suite\"";
-	$del_suite = "delete from auto_test_suites where auto_suite_name=\"$this_suite\"";
-        $result_one = mysql_query($del_from_list);
-	$result_two = mysql_query($del_suite);	
-	mysql_free_result($result_one);
-	mysql_free_result($result_two);
+	list($test_file, $test_class) = explode(":", $this_test);
+	$del_test_from_suites = "delete from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
+	$del_test_case = "delete from auto_test_case where File=\"$test_file\" and Class=\"$test_class\"";
+        mysql_query($del_test_from_suites);
+	mysql_query($del_test_case);
+	$suites = fetch_suites_that_include_test($this_test);
+	foreach ($suites as $this_suite) {
+	    writeSuiteToCSV($this_suite);
+	}
 	$count += 1;
     }
     display_test_case_table_with_checkboxes();
     echo("<strong><br />Removed $count test case(s) from the database.</strong><br />");
 }
 
+function fetch_suites_that_include_test($file_class) {
+    list($test_file, $test_class) = explode(":", $file_class);
+    $query = "select auto_suite_name from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
+    connect_db();
+    $query_info = mysql_query($query);
+    $suites = array();
+    while ($row = mysql_fetch_assoc($query_info)) {
+	array_push($suites, $row["auto_suite_name"]);
+    }
+    mysql_free_result($query_info);
+    return $suites;
+}
+
 function make_management_right () {
-    ?>
-    <html><head><title>Management</title>
-    <?php javascript_header();?>
-    <?php style_header();?>
-    </head>
-    <body>
-    <hr />
-    <?php
+    echo("<html><head><title>Management</title>");
+    javascript_header();
+    style_header();
+    echo("</head>");
+    echo("<body>");
+    echo("<hr />");
     if (!empty($_GET['manage_id'])) {
         $mgnt_id = $_GET['manage_id'];
     } else {
@@ -1303,10 +1317,8 @@ function make_management_right () {
     } else {
         show_autoTestInDB ();
     }
-    ?>
-    <hr />
-    </body>
-    </html>
-    <?php
+    echo("<hr />");
+    echo("</body>");
+    echo("</html>");
 }
 ?>
