@@ -145,7 +145,7 @@ function make_management_left() {
             if (empty ($_POST['newSuiteName'])) {
                 echo "<tr><th colspan=2 align=center>No working suite selected.</th></tr>";
             } else {
-                if (addSuite ($_POST['newSuiteName']) == -1) {
+                if (add_suite($_POST['newSuiteName']) == -1) {
                     $tColor=$COLORS['PORANGE'];
                 } else {
                     $tColor=$COLORS['GREEN'];
@@ -164,7 +164,7 @@ function make_management_left() {
             }
             echo "</th></tr>";
         }
-        // Get all the suite names, we need it to be here because we may have added a suite from addSuite.
+        // Get all the suite names, we need it to be here because we may have added a suite from add_suite().
         $allSuiteName = mgnt_get_suite_names();
         ?>
         <form action="<?=$_SERVER['PHP_SELF']?>?frame=management_left" method="post" target="management_left" name="Management_Control">
@@ -233,7 +233,7 @@ function make_management_left() {
             if (empty ($_POST['newSuiteName'])) {
                 echo "<tr><th colspan=2 align=center>No working suite selected</th></tr>";
             } else {
-                if (addSuite ($_POST['newSuiteName']) == -1) {
+                if (add_suite($_POST['newSuiteName']) == -1) {
                     $tColor=$COLORS['PORANGE'];
                 } else {
                     $tColor=$COLORS['GREEN'];
@@ -244,7 +244,7 @@ function make_management_left() {
         } else {
             echo "<tr><th colspan=2 align=center bgcolor={$COLORS['PORANGE']}> Suite: {$_POST['suiteName']}</th></tr>";
         }
-        // Get all the suite names, we need it to be here because we may have added a suite from addSuite.
+        // Get all the suite names, we need it to be here because we may have added a suite from add_suite().
         $allSuiteName = mgnt_get_suite_names();
         if (!$allSuiteName) {
             echo "Failed to get suite names.";
@@ -442,6 +442,19 @@ function fetch_suites_that_include_test($file_class) {
 }
 
 
+function fetch_total_number_of_jobs_in_database() {
+    $query = "select * from auto_test_jobs";
+    connect_db();
+    $result = mysql_query($query);
+    $count = 0;
+    while ($this_row = mysql_fetch_assoc($result)) {
+        $count += 1;
+    }
+    mysql_free_result($result);
+    return $count;
+}
+
+
 function display_all_test_cases() {
     global $COLORS;
     $test_count = 0;
@@ -598,6 +611,61 @@ function display_test_case_table_with_checkboxes() {
 }
 
 
+function display_test_results_admin() {
+    global $COLORS;
+    $query = "select * from auto_test_jobs";
+    connect_db();
+    $result = mysql_query($query);
+    $count = 0;
+    $first_row;
+    $last_row;
+    $this_row;
+    while ($this_row = mysql_fetch_assoc($result)) {
+	if ($count == 0) {
+	    $first_row = $this_row;
+	}
+        $count += 1;
+	$last_row = $this_row;
+    }
+    mysql_free_result($result);
+    $now = getdate();
+    $current_date = date('Y-m-d H:i:s', $now[0]);
+    if ($first_row) {
+	$oldest_date = date('Y-m-d H:i:s', $first_row['startTime']);
+    } else {
+	$oldest_date = "";
+    }
+    if ($last_row) {
+	$newest_date = date('Y-m-d H:i:s', $last_row['startTime']);
+    } else {
+	$newest_date = "";
+    }
+    
+    echo "<table border=1 cellpadding=2>";
+    echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}\" target=\"management_right\" method=\"post\">\n";
+    echo "<input type=\"hidden\" name=\"del_results\" value=1/>\n";
+    echo "<strong>Total test runs in the database: </strong>$count<br />";
+    echo "<strong>Today's date/time: </strong>$current_date<br />";
+    echo "<strong>Date of the oldest test run: </strong>$oldest_date<br />";
+    echo "<strong>Date of the most recent test run: </strong>$newest_date<br /><br />";
+    echo "Delete records older than <select name=\"value\">";
+    $count = 1;
+    while ($count <= 30) {
+        echo "<option value=\"$count\">$count</option>\n";
+	$count += 1;
+    }
+    echo "</select>\n";
+    echo "<select name=\"interval\">\n";
+    echo "<option value=\"days\">days</option>\n";
+    echo "<option value=\"weeks\">weeks</option>\n";
+    echo "<option value=\"months\">months</option>\n";
+    echo "</select>\n<br />";
+    echo "<input type=\"submit\" name=\"submit\" value=\"Delete\" /></td></tr>\n";
+    echo "</form>\n";
+    echo "</table>\n";
+}
+
+
 function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $runAsRoot, $xfailBugID) {
     // Function to try to insert file , Class, targetversion into the
     // auto_test_case table.  If there is a file+class already in the
@@ -712,7 +780,7 @@ function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $r
 }
 
 
-function addSuite ($suiteName) {
+function add_suite($suiteName) {
     // This only adds the suite name to the auto_suite_list
     // First check if the suite already exist
     $result = mysql_query("select * from auto_suite_list where suite_name=\"{$suiteName}\"");
@@ -1092,7 +1160,7 @@ function administer_database() {
 	delete_test_cases($_POST["del_tests"]);
 	return;
     } elseif ($_POST["del_results"]) {
-	echo $_POST["del_results"];
+	delete_test_results($_POST["value"], $_POST["interval"]);
 	return;
     }
     if (!$_POST['administer']) {
@@ -1107,7 +1175,7 @@ function administer_database() {
 	display_test_case_table_with_checkboxes();
         return;
     } elseif ($selected_radio == "test_results") {
-        echo $selected_radio." not implemented yet.";
+        display_test_results_admin();
         return;
     }
     return;
@@ -1147,5 +1215,34 @@ function delete_test_cases($tests) {
     }
     display_test_case_table_with_checkboxes();
     echo "<strong><br />Removed $count test case(s) from the database.</strong><br />";
+}
+
+
+function delete_test_results($value, $interval) {
+    $now = getdate();
+    $remove_older_than = 0;
+    if ($interval == "days") {
+	$remove_older_than = ($now[0] - (intval($value) * 86400));
+    } elseif ($interval == "weeks") {
+	$remove_older_than = ($now[0] - (intval($value) * 604800));
+    } elseif ($interval == "months") {
+	$remove_older_than = ($now[0] - (intval($value) * 2629743));
+    }
+    $before = fetch_total_number_of_jobs_in_database();
+    
+    connect_db();
+    $query = "delete from auto_test_jobs where startTime < $remove_older_than";
+    mysql_query($query);
+    $query = "delete from auto_test_item where startTime < $remove_older_than";
+    mysql_query($query);    
+    
+    $after = fetch_total_number_of_jobs_in_database();
+    $removed = ($before - $after);
+    
+    display_test_results_admin();
+    //echo "<strong><br />Current time: $now[0]</strong><br />";
+    //echo "<strong><br />Remove records older than: $remove_older_than</strong><br />";
+    echo "<strong><br />Removed $removed test records(s) from the database.</strong><br />";
+    return;
 }
 ?>
