@@ -127,8 +127,8 @@ function make_management_left() {
         echo "<tr bgcolor={$COLORS['YELLOW']}><td align=center>Updated the database with new value</td></tr>";
         echo "<tr bgcolor={$COLORS['RED']}><td align=center>Failed database action</td></tr>";
         echo "<tr bgcolor={$COLORS['PORANGE']}><td align=center>Unable to process csv line</td></tr>";
-	echo "</table>";
-	echo "<p></p>";
+        echo "</table>";
+        echo "<p></p>";
     } elseif ($select == 2) {
         $tlArray = mgnt_make_test_array();
         $suite_name = "";
@@ -435,7 +435,7 @@ function fetch_suites_that_include_test($file_class) {
     $query_info = mysql_query($query);
     $suites = array();
     while ($row = mysql_fetch_assoc($query_info)) {
-	array_push($suites, $row["auto_suite_name"]);
+        array_push($suites, $row["auto_suite_name"]);
     }
     mysql_free_result($query_info);
     return $suites;
@@ -558,9 +558,9 @@ function display_test_suite_table_with_checkboxes() {
     $count = 0;
     foreach ($all_suites as $this_suite) {
         if (($count % 2) == 0) {
-	    $bgc = $COLORS['LIGHTBLUE'];
+            $bgc = $COLORS['LIGHTBLUE'];
         } else {
-    	    $bgc = $COLORS['WHITE'];
+            $bgc = $COLORS['WHITE'];
         }
         echo "<tr bgcolor=\"$bgc\">";
         echo "<td align=center><input type=\"checkbox\" name=\"del_suites[]\" value=\"$this_suite\"/></td>";
@@ -591,12 +591,12 @@ function display_test_case_table_with_checkboxes() {
     $result = mysql_query($query);
     $count = 0;
     while ($row = mysql_fetch_assoc($result)) {
-	if (($count % 2) == 0) {
-	    $bgc = $COLORS['LIGHTBLUE'];
-	} else {
-	    $bgc = $COLORS['WHITE'];
-	}
-	echo "<tr bgcolor=\"$bgc\">";
+        if (($count % 2) == 0) {
+            $bgc = $COLORS['LIGHTBLUE'];
+        } else {
+            $bgc = $COLORS['WHITE'];
+        }
+        echo "<tr bgcolor=\"$bgc\">";
         echo "<td align=center><input type=\"checkbox\" name=\"del_tests[]\" value=\"{$row['File']}:{$row['Class']}\"/></td>";
         echo "<td>".$row['File']."</td>";
         echo "<td>".$row['Class']."</td>";
@@ -621,24 +621,24 @@ function display_test_results_admin() {
     $last_row;
     $this_row;
     while ($this_row = mysql_fetch_assoc($result)) {
-	if ($count == 0) {
-	    $first_row = $this_row;
-	}
+        if ($count == 0) {
+            $first_row = $this_row;
+        }
         $count += 1;
-	$last_row = $this_row;
+        $last_row = $this_row;
     }
     mysql_free_result($result);
     $now = getdate();
     $current_date = date('Y-m-d H:i:s', $now[0]);
     if ($first_row) {
-	$oldest_date = date('Y-m-d H:i:s', $first_row['startTime']);
+        $oldest_date = date('Y-m-d H:i:s', $first_row['startTime']);
     } else {
-	$oldest_date = "";
+        $oldest_date = "";
     }
     if ($last_row) {
-	$newest_date = date('Y-m-d H:i:s', $last_row['startTime']);
+        $newest_date = date('Y-m-d H:i:s', $last_row['startTime']);
     } else {
-	$newest_date = "";
+        $newest_date = "";
     }
     
     echo "<table border=1 cellpadding=2>";
@@ -652,7 +652,7 @@ function display_test_results_admin() {
     $count = 1;
     while ($count <= 30) {
         echo "<option value=\"$count\">$count</option>\n";
-	$count += 1;
+        $count += 1;
     }
     echo "</select>\n";
     echo "<select name=\"interval\">\n";
@@ -1154,14 +1154,14 @@ function mgnt_right_suite_page_old() {
 function administer_database() {
     global $COLORS;
     if ($_POST["del_suites"]) {
-	delete_suites($_POST["del_suites"]);
-	return;
+        delete_suites($_POST["del_suites"]);
+        return;
     } elseif ($_POST["del_tests"]) {
-	delete_test_cases($_POST["del_tests"]);
-	return;
+        delete_test_cases($_POST["del_tests"]);
+        return;
     } elseif ($_POST["del_results"]) {
-	delete_test_results($_POST["value"], $_POST["interval"]);
-	return;
+        delete_test_results($_POST["value"], $_POST["interval"]);
+        return;
     }
     if (!$_POST['administer']) {
         echo "Select a database table to administer." ;
@@ -1169,10 +1169,10 @@ function administer_database() {
     }
     $selected_radio = $_POST['administer'];
     if ($selected_radio == "test_suites") {
-	display_test_suite_table_with_checkboxes();
+        display_test_suite_table_with_checkboxes();
         return;
     } elseif ($selected_radio == "test_cases") {
-	display_test_case_table_with_checkboxes();
+        display_test_case_table_with_checkboxes();
         return;
     } elseif ($selected_radio == "test_results") {
         display_test_results_admin();
@@ -1186,12 +1186,12 @@ function delete_suites($suites) {
     $count = 0;
     connect_db();
     foreach ($suites as $this_suite) {
-	$del_from_list = "delete from auto_suite_list where suite_name=\"$this_suite\"";
-	$del_suite = "delete from auto_test_suites where auto_suite_name=\"$this_suite\"";
+        $del_from_list = "delete from auto_suite_list where suite_name=\"$this_suite\"";
+        $del_suite = "delete from auto_test_suites where auto_suite_name=\"$this_suite\"";
         mysql_query($del_from_list);
-	mysql_query($del_suite);
-	unlink("./csv/{$this_suite}.csv");
-	$count += 1;
+        mysql_query($del_suite);
+        unlink("./csv/{$this_suite}.csv");
+        $count += 1;
     }
     display_test_suite_table_with_checkboxes();
     echo "<strong><br />Removed $count suite(s) from the database.</strong><br />";
@@ -1202,16 +1202,16 @@ function delete_test_cases($tests) {
     $count = 0;
     connect_db();
     foreach ($tests as $this_test) {
-	list($test_file, $test_class) = explode(":", $this_test);
-	$del_test_from_suites = "delete from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
-	$del_test_case = "delete from auto_test_case where File=\"$test_file\" and Class=\"$test_class\"";
+        list($test_file, $test_class) = explode(":", $this_test);
+        $del_test_from_suites = "delete from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
+        $del_test_case = "delete from auto_test_case where File=\"$test_file\" and Class=\"$test_class\"";
         mysql_query($del_test_from_suites);
-	mysql_query($del_test_case);
-	$suites = fetch_suites_that_include_test($this_test);
-	foreach ($suites as $this_suite) {
-	    write_suite_to_csv_file($this_suite);
-	}
-	$count += 1;
+        mysql_query($del_test_case);
+        $suites = fetch_suites_that_include_test($this_test);
+        foreach ($suites as $this_suite) {
+            write_suite_to_csv_file($this_suite);
+        }
+        $count += 1;
     }
     display_test_case_table_with_checkboxes();
     echo "<strong><br />Removed $count test case(s) from the database.</strong><br />";
@@ -1222,11 +1222,11 @@ function delete_test_results($value, $interval) {
     $now = getdate();
     $remove_older_than = 0;
     if ($interval == "days") {
-	$remove_older_than = ($now[0] - (intval($value) * 86400));
+        $remove_older_than = ($now[0] - (intval($value) * 86400));
     } elseif ($interval == "weeks") {
-	$remove_older_than = ($now[0] - (intval($value) * 604800));
+        $remove_older_than = ($now[0] - (intval($value) * 604800));
     } elseif ($interval == "months") {
-	$remove_older_than = ($now[0] - (intval($value) * 2629743));
+        $remove_older_than = ($now[0] - (intval($value) * 2629743));
     }
     $before = fetch_total_number_of_jobs_in_database();
     
