@@ -449,7 +449,7 @@ function make_report_right ($rightArray) {
 		//foreach ($rightArray as $key => $value) {
 		//	echo "{$key} => {$value}\n";
 		//}
-		echo "Please select a report";
+		echo "Please select a report.";
 	}
 	?>
 	<hr />
@@ -516,8 +516,8 @@ function report_allTest ($whereClause) {
 	</tr>
 	<?php
 	while ($row = mysql_fetch_assoc ($result)) {
-		$startTime = date ('m/d/y H:i:s', $row['startTime']);
-		$endTime = date ('m/d/y H:i:s', $row['endTime']);
+		$startTime = date ('Y-m-d H:i:s', $row['startTime']);
+		$endTime = date ('Y-m-d H:i:s', $row['endTime']);
 		$runTime = $row['endTime'] - $row['startTime'];
 		echo "<tr>\n";
 		echo "<td>{$row['testFile']}</td>\n";
@@ -605,8 +605,8 @@ function report_latestTest ($whereClause) {
     </tr>
 	<?php
     foreach ($info as $row) {
-        $startTime = date ('m/d/y H:i:s', $row['startTime']);
-        $endTime = date ('m/d/y H:i:s', $row['endTime']);
+        $startTime = date ('Y-m-d H:i:s', $row['startTime']);
+        $endTime = date ('Y-m-d H:i:s', $row['endTime']);
 		$runTime = $row['endTime'] - $row['startTime'];
 		$bgc = get_status_color ($row['testStatus']);
 		if ($row['age'] > 90) {
@@ -761,8 +761,8 @@ function report_suite_result () {
 	$depth += 2;
 	echo "<tr><th>Tests</th><th>XFAIL Bug ID</th>";
 	foreach ($jobList as $job) {
-		$etime = date ('m/d/y H:i:s', $jobArray[$job]['startTime']);
-		$endTime = date ('m/d/y H:i:s', $jobArray[$job]['endTime']);
+		$etime = date ('Y-m-d H:i:s', $jobArray[$job]['startTime']);
+		$endTime = date ('Y-m-d H:i:s', $jobArray[$job]['endTime']);
 		if ($jobArray[$job]['endTime'] == $jobArray[$job]['startTime']) {
 			$detaTime = 0;
 		} else {
@@ -848,7 +848,7 @@ function report_testData ($whereClause) {
 	mysql_free_result ($result);
 
 	echo "<table border=1>\n";
-	echo ("<tr><th colspan={$keyCount}>Test Data Report.</th></tr>\n");
+	echo "<tr><th colspan={$keyCount}>Test Data Report</th></tr>\n";
 	echo "<tr><th>Job ID</th>\n";
 	echo "<th>End Time</th>\n";
 	foreach ($tableKey as $tHead) {
@@ -860,7 +860,7 @@ function report_testData ($whereClause) {
 		foreach ($minfo as $jobID => $mpoint) {
 			echo "<tr>\n";
 			echo "<td>{$jobID}</td>\n";
-			$etime = date ('d M y H:i:s', $mpoint['endTime']);
+			$etime = date ('Y-m-d H:i:s', $mpoint['endTime']);
 			echo "<td>{$etime}</td>\n";
 			if (count($tableKey) > 0) {
 				foreach ($tableKey as $tHead) {
@@ -875,28 +875,6 @@ function report_testData ($whereClause) {
 		}
 	}
 	echo "</table>\n";
-
-
 }
-
-
-function report_type4 ($whereClause) {
-	echo ("<br />This is a test page to test out data values.<br />");
-	echo ("whereClause:".$whereClause."<br />"); 	
-	foreach ($_POST as $key => $value) {
-		echo "{$key} => {$value}<br/>";
-	}
-	if (!empty($_POST['testFile'])) {
-		foreach ($_POST['testFile'] as $key => $value) {
-			echo "{$key} => {$value}<br/>";
-		}
-	}
-	if (!empty($_POST['testClass'])) {
-		foreach ($_POST['testClass'] as $key => $value) {
-			echo "{$key} => {$value}<br/>";
-		}
-	}
-}
-
 
 ?>
