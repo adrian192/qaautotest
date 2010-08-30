@@ -354,7 +354,7 @@ function write_all_tests_csv() {
     if (!$result) {
         die("Invalid query: ".mysql_error());
     }
-    $myFile = "./csv/allTests.csv";
+    $myFile = "./csv/all_tests.csv";
     $fh = fopen($myFile, "w") or die("Can't open file.");  // Replace old file.
     fwrite ($fh, "file_name,test_class,target_version,run_flag,run_as_root,xfail_bug_id\n");
     while ($row = mysql_fetch_assoc($result)) {
