@@ -139,11 +139,11 @@ function make_management_left() {
             return;
         }
         // This is the suite management page.
-        echo "<table>\n";
+        echo "\n<table>\n";
         // First we have a text entry for adding suites, this will add an item into the auto_suite_list.
         if (empty ($_POST['suiteNameList'])) {
             if (empty ($_POST['newSuiteName'])) {
-                echo "<tr><th colspan=2 align=center>No working suite selected.</th></tr>";
+				echo "";
             } else {
                 if (add_suite($_POST['newSuiteName']) == -1) {
                     $tColor=$COLORS['PORANGE'];
@@ -151,72 +151,77 @@ function make_management_left() {
                     $tColor=$COLORS['GREEN'];
                     $_POST['suiteNameList'][] = $_POST['newSuiteName'];
                 }
-                echo "<tr><th colspan=2 align=center bgcolor={$tColor}> Suite: {$_POST['newSuiteName']}</th></tr>";
+                echo "<tr><th colspan=2 align=center bgcolor={$tColor}> Suite: {$_POST['newSuiteName']}</th></tr>\n";
             }
         } else {
             // Print out each suite to the top
-            echo "<tr><th colspan=2 align=center bgcolor={$COLORS['PORANGE']}> Suite(s): ";
+            echo "<tr><th colspan=2 align=center bgcolor={$COLORS['PORANGE']}> Suite(s): \n";
             foreach ($_POST['suiteNameList'] as $pSuiteName) {
                 if ($pSuiteName == "") {
                     continue;
                 }
                 echo "{$pSuiteName} ";
             }
-            echo "</th></tr>";
+            echo "</th></tr>\n";
         }
         // Get all the suite names, we need it to be here because we may have added a suite from add_suite().
         $allSuiteName = mgnt_get_suite_names();
-        ?>
-        <form action="<?=$_SERVER['PHP_SELF']?>?frame=management_left" method="post" target="management_left" name="Management_Control">
-        <input type="hidden" name="mgnt_list" value="2" />
-        <tr><th size=15 align=left>New Suite</th><td><input type="text" name="newSuiteName" size="25" /></td></tr>
-        <tr><th colspan=2 align=center>or select</th></tr>
-        <tr>
-        <th size=15 align=left>Existing Suites</th>
-        <td>
-        <select name=suiteNameList[] multiple size=10>
-        <?php
-        echo "<option value=\"\">None</option>\n";
-        foreach ($allSuiteName as $suiteName) {
-            $selected = "";
-            if (!empty ($_POST['suiteNameList'])) {
-                foreach ($_POST['suiteNameList'] as $csName) {
-                    if ($csName == $suiteName) {
-                        $selected = "selected";
+        echo "<form action={$_SERVER['PHP_SELF']}?frame=management_left method=\"post\" target=\"management_left\" name=\"Management_Control\">\n";
+        echo "<input type=\"hidden\" name=\"mgnt_list\" value=\"2\" />\n";
+        echo "<tr><th size=15 align=left>Create suite</th>\n<td><input type=\"text\" name=\"newSuiteName\" size=\"25\" /></td></tr>\n";
+		echo "<tr><td></td><td><input type=\"submit\" value=\"Create\" /><br><br></td></tr>";
+        echo "</form>\n\n";
+		if (!$allSuiteName) {
+		    echo "<tr><td colspan=2>Create a new test suite by entering a suite name into the text box and clicking \"Create\".</td></tr>\n";
+		} else {
+		    echo "<form action={$_SERVER['PHP_SELF']}?frame=management_left method=\"post\" target=\"management_left\" name=\"Management_Control\">\n";
+            echo "<input type=\"hidden\" name=\"mgnt_list\" value=\"2\" />\n";
+            echo "<tr>\n";
+            echo "<th size=15 align=left valign=\"top\">or select an existing suite</th>\n";
+            echo "<td>\n";
+            echo "<select name=suiteNameList[] multiple size=10>\n";
+            //echo "<option value=\"\">None</option>\n";
+            foreach ($allSuiteName as $suiteName) {
+                $selected = "";
+                if (!empty ($_POST['suiteNameList'])) {
+                    foreach ($_POST['suiteNameList'] as $csName) {
+                        if ($csName == $suiteName) {
+                            $selected = "selected";
+                        }
                     }
                 }
+                echo "<option value=\"{$suiteName}\" $selected>{$suiteName}</option>\n";
             }
-            echo "<option value=\"{$suiteName}\" $selected>{$suiteName}</option>\n";
-        }
-        echo "</select>";
-        echo "<tr><td colspan=2><input type=\"submit\" value=\"Set working suite\" /></td></tr>";
-        echo "</form>";
-        echo "<form action={$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$select} target=\"management_right\" method=\"post\">";
-        if (!empty ($_POST['suiteNameList'])) {
-            foreach ($_POST['suiteNameList'] as $gsName) {
-                echo "<input type=\"hidden\" name=\"suiteNameList[]\" value=\"{$gsName}\" />\n";
+            echo "</select>";
+            echo "<tr><td></td><td><input type=\"submit\" value=\"Set working suite\" /></td></tr>\n";
+            echo "</form>\n\n";
+            echo "<form action={$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$select} target=\"management_right\" method=\"post\">\n";
+            if (!empty ($_POST['suiteNameList'])) {
+                foreach ($_POST['suiteNameList'] as $gsName) {
+                    echo "<input type=\"hidden\" name=\"suiteNameList[]\" value=\"{$gsName}\" />\n";
+                }
             }
-        }
-        echo "</td></tr>";
-        echo "<tr><td colspan=2>";
-        echo "<select name=addSuiteList[] multiple>";
-        foreach ($tlArray as $fileName => $fileItems) {
-            echo "<optgroup label=\"{$fileName}\">\n";
-            foreach ($fileItems as $test) {
-                echo "<option value=\"{$test['File']},{$test['Class']}\">{$test['Class']}</option>\n";
+            echo "</td></tr>\n";
+		    echo "<th size=15 align=left colspan=2><br><br>Add tests to the selected suite:</th>\n";
+            echo "<tr><td colspan=2>\n";
+            echo "<select name=addSuiteList[] multiple>\n";
+            foreach ($tlArray as $fileName => $fileItems) {
+                echo "<optgroup label=\"{$fileName}\">\n";
+                foreach ($fileItems as $test) {
+                    echo "<option value=\"{$test['File']},{$test['Class']}\">{$test['Class']}</option>\n";
+                }
+                echo "</optgroup>\n";
             }
-            echo "</optgroup>\n";
-        }
-        echo "</select>";
-        echo "</td></tr>";
-        echo "<tr><td colspan=2><input type=\"submit\" name=\"UpdateSuite\" value=\"Add tests to suite\" /></td></tr>";
-        echo "<tr><td colspan=2>Step 1: Enter the name of a new suite or select an existing suite.</td></tr>";
-        echo "<tr><td colspan=2>Step 2: Click \"Set Working Suite\".</td></tr>";
-        echo "<tr><td colspan=2>Step 3: Select tests to add to the suite.</td></tr>";
-        echo "<tr><td colspan=2>Step 4: Click \"Add tests to suite\".</td></tr>";
-        echo "</form>";
+            echo "</select>\n";
+            echo "</td></tr>\n";
+            echo "<tr><td colspan=2><input type=\"submit\" name=\"UpdateSuite\" value=\"Add tests to suite\" /></td></tr>\n";
+            echo "<tr><td colspan=2>Step 1: Create a new suite or select an existing suite.</td></tr>\n";
+            echo "<tr><td colspan=2>Step 2: Select tests to add to the suite.</td></tr>\n";
+            echo "<tr><td colspan=2>Step 3: Click \"Add tests to suite\".</td></tr>\n";
+            echo "</form>\n\n";
+		}
         // Second we will have a list of test items in a checkbox list.
-        echo "</table>\n";    
+        echo "</table>\n";
     } elseif ($select == 3) {
         $tlArray = mgnt_make_test_array();
         $suite_name = "";
