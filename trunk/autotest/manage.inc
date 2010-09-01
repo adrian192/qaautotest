@@ -556,7 +556,7 @@ function display_test_suite_table_with_checkboxes() {
     echo "<input type=\"hidden\" name=\"del_suite\" value=1/>\n";
     // A check all box
     echo "<tr><td align=center>\n";
-    echo "<input type=\"checkbox\" name=\"checkall\""; 
+    echo "<input type=\"checkbox\" name=\"checkall\" "; 
     echo "onclick=\"window.parent.checkAll(window.parent.management_right.document.delete_suites, window.parent.management_right.document.delete_suites.checkall);\"/></td><th>Suite Name</th></tr>\n";
     // Now create the check box for each suite.
     $all_suites = mgnt_get_suite_names();
@@ -588,7 +588,7 @@ function display_test_case_table_with_checkboxes() {
     echo "<input type=\"hidden\" name=\"del_test\" value=1/>\n";
     // A check all box
     echo "<tr><td align=center>\n";
-    echo "<input type=\"checkbox\" name=\"checkall\""; 
+    echo "<input type=\"checkbox\" name=\"checkall\" "; 
     echo "onclick=\"window.parent.checkAll(window.parent.management_right.document.delete_test_cases, window.parent.management_right.document.delete_test_cases.checkall);\"/></td><th>File Name</th><th>Test Class</th></tr>\n";
     // Now create the check box for each suite.
     $query = "select File, Class from auto_test_case order by File, Class";
@@ -646,7 +646,7 @@ function display_test_results_admin() {
         $newest_date = "";
     }
     
-    echo "<table border=1 cellpadding=2>";
+    //echo "<table border=1 cellpadding=2>";
     echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}\" target=\"management_right\" method=\"post\">\n";
     echo "<input type=\"hidden\" name=\"del_results\" value=1/>\n";
     echo "<strong>Total test runs in the database: </strong>$count<br />";
@@ -667,7 +667,7 @@ function display_test_results_admin() {
     echo "</select>\n<br />";
     echo "<input type=\"submit\" name=\"submit\" value=\"Delete\" /></td></tr>\n";
     echo "</form>\n";
-    echo "</table>\n";
+    //echo "</table>\n";
 }
 
 
@@ -868,7 +868,7 @@ function mgnt_right_suite_page() {
         if ($_POST['suiteNameList']) {
             $_GET['suiteNameList'] = $_POST['suiteNameList'];
         } elseif (!$_GET['newSuiteName']) {
-            echo "No test suite selected.";
+            echo "Create a new suite or select an existing test suite from the left frame.";
         } else {
             echo "Please add tests to new test suite '{$_GET['newSuiteName']}' from the left frame.";
         }
@@ -886,7 +886,7 @@ function mgnt_right_suite_page() {
         }
         if ($suiteNameString == "(" and $gsName == "") {
             // There is no suite, just die
-            echo "No test suite selected.";
+            echo "Create a new suite or select an existing test suite from the left frame.";
             return;
         }
         $suiteNameString = trim ($suiteNameString, ",");
@@ -929,7 +929,6 @@ function mgnt_right_suite_page() {
             if (!empty ($newStuff)) {
                 foreach ($newStuff as $workItem) {
                     list ($workSuiteName, $workFileName, $workClassName) = split (",", $workItem);
-                    echo "<p>";
                     $idQuery = mysql_query("select id from auto_test_case where File=\"{$workFileName}\" and Class=\"{$workClassName}\"");
                     $testID = mysql_fetch_assoc($idQuery);
                     $addQuery = "insert into auto_test_suites ".
@@ -999,6 +998,10 @@ function mgnt_right_suite_page() {
         // Free the db results structure.
         mysql_free_result($dbResult);
         // Order the suites by suite,fileName,TestName as key
+		if (!$test2SuiteA) {
+		    echo "Add test cases to the selected suite(s) by selecting the desired tests, then click \"Add tests to suite\".";
+			return;
+		}
         echo "<table border=1>";
 //        echo "<tr><th colspan=10 align=center>{$_GET['suiteNameList']}</th></tr>\n";
         echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}&\" target=\"management_right\" method=\"post\" name=\"suite_case_mod\">\n";
@@ -1010,12 +1013,12 @@ function mgnt_right_suite_page() {
             echo "<input type=\"hidden\" name=\"suiteNameList[]\" value=\"{$gsName}\" />\n";
         }
         echo "<input type=\"hidden\" name=\"modSuiteItem\" value=1/>\n";
-        echo "<tr><th>File</th><th>Class</th>";
+        echo "<tr><th>File</th><th>Class</th>\n";
         foreach ($_GET['suiteNameList'] as $gsName) {
             if ($gsName == "") {
                 continue;
             }
-            echo "<th>{$gsName}</th>";
+            echo "<th>{$gsName}</th>\n";
         }
         echo "</tr>\n";
         // Now generate the check boxes using the test2SuiteA array
@@ -1027,16 +1030,25 @@ function mgnt_right_suite_page() {
                 } else {
                     $bgc = $COLORS['WHITE'];
                 }
+				if ($count == 0) {
+		                echo "<tr>\n";
+                        echo "<td colspan=2></td>\n";
+						foreach ($_GET['suiteNameList'] as $this_suite) {
+                        echo "<td align=center><input type=\"checkbox\" name=\"{$this_suite}_top\" onclick=\"window.parent.check_suite(window.parent.management_right.document.suite_case_mod, window.parent.management_right.document.suite_case_mod.{$this_suite}_top)\" /></td>\n";
+						}
+                        echo "</tr>\n";
+						$count += 2;
+		            }
                 echo "<tr bgcolor={$bgc}>";
-                echo "<td>{$testFile}</td><td>{$testClass}</td>";
+                echo "<td>{$testFile}</td><td>{$testClass}</td>\n";
                 foreach ($_GET['suiteNameList'] as $gsName) {
                     if ($gsName == "") {
                         continue;
                     }
                     if (array_key_exists ($gsName, $suiteList)) {
-                        echo "<td align=center><input type=\"checkbox\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>\n";
                     } else {
-                        echo "<td align=center><input type=\"checkbox\" name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>\n";
                     }
                 }
                 echo "</tr>\n";
@@ -1047,12 +1059,13 @@ function mgnt_right_suite_page() {
         echo "<input type=\"submit\" name=\"ModStuffSuite\" value=\"Apply\" /></td></tr>\n";
         echo "</form>\n";
         echo "</table>\n";
+		echo "Note: This table is an exclusive list of test cases in the selected suites.  Test cases that are not a part of any of the selected suites will not show up in the list.  Check the \"Test to suite matrix\" to see what tests may be omitted.<br /><br />";
         // Finally dump each suite to the csv file.
         foreach ($_GET['suiteNameList'] as $gsName) {
             if ($gsName == "") {
                 continue;
             }
-            echo "<a href=./csv/{$gsName}.csv>{$gsName}.csv</a><br>";
+            echo "<a href=./csv/{$gsName}.csv>{$gsName}.csv</a><br>\n";
             write_suite_to_csv_file($gsName);
         }
     }
@@ -1129,7 +1142,7 @@ function mgnt_right_suite_page_old() {
         echo "<tr><th>Delete</th><th>Python File</th><th>Test Class</th></tr>\n";
         // A check all box
         echo "<tr><td align=center>\n";
-        echo "<input type=\"checkbox\" name=\"checkall\""; 
+        echo "<input type=\"checkbox\" name=\"checkall\" "; 
         echo "onclick=\"window.parent.checkAll(window.parent.management_right.document.suite_case_delete, window.parent.management_right.document.suite_case_delete.checkall);\"/></td><th colspan=10 align=left>Check All</th></tr>\n";
         // Now create the check box for each test.
         $count = 0;

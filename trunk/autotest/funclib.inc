@@ -15,6 +15,28 @@ function javascript_header() {
         }
     }
     </script>
+	<script type="text/javascript">
+    function check_suite (fname, chkbox) {
+        var val = chkbox.checked;
+        var count = 0;
+        while (1) {
+            if (fname["SuiteMod[]"][count] == undefined) {
+                break;
+            }
+            else {
+                count += 1;
+            }
+        }
+        for (var i=0; i<count; i++) {
+            var non_chrome_name = chkbox.name;
+            var chrome_name = chkbox.id;
+            if ((fname["SuiteMod[]"][i].id == non_chrome_name.replace("_top","")) ||
+                (fname["SuiteMod[]"][i].id == chrome_name.replace("_top",""))){
+                fname["SuiteMod[]"][i].checked = val;
+            }
+        }
+    }
+    </script>
     <?php
 }
 
@@ -28,14 +50,6 @@ function style_header() {
     body{
     font: 10pt Verdana,sans-serif;
     color: darkblue;
-    }
-    .trigger{
-    cursor: pointer;
-    cursor: hand;
-    }
-    .branch{
-    display: none;
-    margin-left: 10px;
     }
     </style>
     <?php
