@@ -248,7 +248,7 @@ class Harness(object):
             sys.exit(1)
         
         # If the suite's in the database check which tests are part of the suite
-        db_rc = self.dba.query("select id, testFile, testClass from auto_test_suites where auto_suite_name=\"%s\"" %suite)
+        db_rc = self.dba.query("select id, test_file, test_class from auto_test_suites where auto_suite_name=\"%s\"" %suite)
         if db_rc == ():
             self.log.error("Given suite \"%s\" does not have any tests "
                            "associated with it." %suite)
@@ -261,9 +261,9 @@ class Harness(object):
         atc_class = []
         atc_list = [] # Create a pair with File and Class, to allow same test name in different files.
         for item in db_rc:
-            file_name = item['testFile']
-            class_name = item['testClass']
-            # Do a search on the auto_test_case list for testFile and testClass
+            file_name = item['test_file']
+            class_name = item['test_class']
+            # Do a search on the auto_test_case list for test_file and test_class
             if file_name not in atc_file:
                 atc_file.append(file_name)
             if class_name not in atc_class:
@@ -271,8 +271,8 @@ class Harness(object):
             atc_list.append("%s:%s"%(file_name, class_name))
         atc_file = "\"%s\""%"\",\"".join(atc_file)
         atc_class = "\"%s\""%"\",\"".join(atc_class)
-        db_test_data = self.dba.query("select File, Class, targetVersion, "
-                                      "testRunFlag, runAsRoot from "
+        db_test_data = self.dba.query("select File, Class, "
+                                      "run_flag, run_as_root from "
                                       "auto_test_case where File in (%s) "
                                       "and Class in (%s) order by File, Class"
                                       %(atc_file, atc_class))
@@ -280,14 +280,11 @@ class Harness(object):
             self.log.error("Failed to create test case list from the database.")
             self.dba.disconnect_db()
             sys.exit(1)
-        # Update the testList with testFileName, testClassName, targetVersion,
-        # runTimeFlag, Discription
-        # The targetVersion and Discription will be '' string.
+        # Update the testList with test_fileName, test_className, run_flag
         for item in db_test_data:
             if ("%s:%s" %(item['File'], item['Class']) in atc_list):
                 test_list.append([item['File'], item['Class'],
-                                 item['targetVersion'], item['testRunFlag'],
-                                 item['runAsRoot'], ''])
+                                 item['run_flag'], item['run_as_root']])
         return test_list
     
     def run_tests(self, config=None, store_to_database=False, 
@@ -351,10 +348,9 @@ class Harness(object):
     def __execute_test_case(self, config, test_case_params):
         test_status = {"test_file": "",
                        "test_class": "",
-                       "target_version": 0,
                        "run_flag": None,
-                       "startTime": 0, # wall-clock time start
-                       "endTime": 0, # wall-clock time end
+                       "start_time": 0, # wall-clock time start
+                       "end_time": 0, # wall-clock time end
                        "stime": 0, # kernel time duration
                        "utime": 0, # user time duration
                        "status": "FAIL",
@@ -375,15 +371,14 @@ class Harness(object):
         test_config = copy.copy(config)
         test_status["test_file"] = test_case_params[0]
         test_status["test_class"] = test_case_params[1]
-        test_status["target_version"] = test_case_params[2]
-        test_status["run_flag"] = test_case_params[3]
-        if len(test_case_params) > 4:
+        test_status["run_flag"] = test_case_params[2]
+        if len(test_case_params) > 3:
             try:
-                test_config["run_as_root"] = rar_dict[test_case_params[4]]
+                test_config["run_as_root"] = rar_dict[test_case_params[3]]
             except KeyError:
                 self.log.debug("run_as_root value for test %s:%s is set to '%s'."
                                %(test_status["test_file"],
-                                 test_status["test_class"], test_case_params[4]))
+                                 test_status["test_class"], test_case_params[3]))
                 test_config["run_as_root"] = False
         
         #######################################################################
@@ -460,8 +455,8 @@ class Harness(object):
             return False
         #######################################################################
         
-        test_status["startTime"] = time.time()
-        test_status["endTime"] = time.time()
+        test_status["start_time"] = time.time()
+        test_status["end_time"] = time.time()
         self.log.debug("Run test %s:%s" %(test_status["test_file"],
                                           test_status["test_class"]))
         os_times = os.times()
@@ -491,7 +486,7 @@ class Harness(object):
         kernel_time_end = os_times[1]
         test_status["stime"] = kernel_time_end - kernel_time_start
         test_status["utime"] = user_time_end - user_time_start
-        test_status["endTime"] = time.time()
+        test_status["end_time"] = time.time()
         
         if not directives.end():
             self.log.error("One of the post-test case directives failed.  The "
@@ -602,34 +597,34 @@ class Harness(object):
                            "database: %s" %traceback.format_exc())
             return False
         
-        # insert into the job table and get back the insert ID, the insertID is the new jobID
-        add_job_query = "insert into auto_test_jobs (startTime, endTime, status, version, jobHTML, primeTestUnit, suiteID) "+\
-                        "values (%s, %s, '%s', '%s', '%s', '%s', %s)" \
-                        %(self.test_start_time, self.test_end_time, "done", "1", "none", get_local_ip(), self.suite_id)
+        # insert into the job table and get back the insert ID, the insertID is the new job_id
+        add_job_query = "insert into auto_test_jobs (start_time, end_time, status, test_host, suite_id) "+\
+                        "values (%s, %s, '%s', '%s', '%s')" \
+                        %(self.test_start_time, self.test_end_time, "done", get_local_ip(), self.suite_id)
         
         db_rc = self.dba.update(add_job_query)
         if db_rc != 0: # If we added at least 1 row to the table.
-            job_id = self.dba.db.insert_id()  # The insert ID is the jobID, this is the primary ID field in the table.
+            job_id = self.dba.db.insert_id()  # The insert ID is the job_id, this is the primary ID field in the table.
         
         for label, test in self.test_results.iteritems():
             # 3: Compose the update line
             update_line = ""
-            if test["startTime"] != None:
-                update_line += "startTime=%f," %test["startTime"]
-            if test["endTime"] != None:
-                update_line += "endTime=%f," %test["endTime"]
-                update_line += "runTime=%f," %(test["endTime"] - test["startTime"])
+            if test["start_time"] != None:
+                update_line += "start_time=%f," %test["start_time"]
+            if test["end_time"] != None:
+                update_line += "end_time=%f," %test["end_time"]
+                update_line += "run_time=%f," %(test["end_time"] - test["start_time"])
             if test["status"] != None:
-                update_line += "testStatus='%s'," %test["status"]
+                update_line += "test_status='%s'," %test["status"]
             if test["test_data"] != None:
-                update_line += "testData='%s'," %test["test_data"]
+                update_line += "test_data='%s'," %test["test_data"]
             if test["stime"] != None:
                 update_line += "stime=%f," %test["stime"]
             if test["utime"] != None:
                 update_line += "utime=%f," %test["utime"]
             update_line = update_line.rstrip(",")
             
-            query_line = "insert into auto_test_item set testFile='%s',testClass='%s',jobID=%s,%s" \
+            query_line = "insert into auto_test_item set test_file='%s',test_class='%s',job_id=%s,%s" \
                         %(test["test_file"], test["test_class"], job_id, update_line)
             db_rc = self.dba.update(query_line)
             if db_rc == 0:

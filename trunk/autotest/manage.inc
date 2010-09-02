@@ -322,11 +322,11 @@ function make_management_left() {
 
 
 function write_suite_to_csv_file($suiteName) {
-    $query = "select atc.File File, atc.Class Class, atc.targetVersion targetVersion, atc.testRunFlag runFlag, atc.runAsRoot runAsRoot, atc.xfailBugID xfailBugID ".
+    $query = "select atc.File File, atc.Class Class, atc.run_flag run_flag, atc.run_as_root run_as_root, atc.xfail_bug_id xfail_bug_id ".
         "from auto_test_case atc ".
 #        "where atc.File in ".
-#        "(select distinct testFile from auto_test_suites where auto_suite_name=\"".$suiteName."\") ".
-#        "and atc.Class in (select distinct testClass from auto_test_suites where auto_suite_name=\"".$suiteName."\") ".
+#        "(select distinct test_file from auto_test_suites where auto_suite_name=\"".$suiteName."\") ".
+#        "and atc.Class in (select distinct test_class from auto_test_suites where auto_suite_name=\"".$suiteName."\") ".
         "where atc.id in (select id from auto_test_suites where auto_suite_name=\"".$suiteName."\") order by atc.File, atc.Class";
     connect_db();
     $result = mysql_query($query);
@@ -335,9 +335,9 @@ function write_suite_to_csv_file($suiteName) {
     }
     $myFile = "./csv/{$suiteName}.csv";
     $fh = fopen($myFile, "w") or die("Can't open file.");  // Replace old file.
-    fwrite ($fh, "file_name,test_class,target_version,run_flag,run_as_root,xfail_bug_id\n");
+    fwrite ($fh, "file_name,test_class,run_flag,run_as_root,xfail_bug_id\n");
     while ($row = mysql_fetch_assoc($result)) {
-        $stringData = "{$row['File']},{$row['Class']},{$row['targetVersion']},{$row['runFlag']},{$row['runAsRoot']},{$row['xfailBugID']}\n";
+        $stringData = "{$row['File']},{$row['Class']},{$row['run_flag']},{$row['run_as_root']},{$row['xfail_bug_id']}\n";
         fwrite ($fh, $stringData);
     }
     fclose($fh);
@@ -347,7 +347,7 @@ function write_suite_to_csv_file($suiteName) {
 
 
 function write_all_tests_csv() {
-    $query = "select atc.File File, atc.Class Class, atc.targetVersion targetVersion, atc.testRunFlag runFlag, atc.runAsRoot runAsRoot, atc.xfailBugID xfailBugID ".
+    $query = "select atc.File File, atc.Class Class, atc.run_flag run_flag, atc.run_as_root run_as_root, atc.xfail_bug_id xfail_bug_id ".
         "from auto_test_case atc";
     connect_db();
     $result = mysql_query($query);
@@ -356,9 +356,9 @@ function write_all_tests_csv() {
     }
     $myFile = "./csv/all_tests.csv";
     $fh = fopen($myFile, "w") or die("Can't open file.");  // Replace old file.
-    fwrite ($fh, "file_name,test_class,target_version,run_flag,run_as_root,xfail_bug_id\n");
+    fwrite ($fh, "file_name,test_class,run_flag,run_as_root,xfail_bug_id\n");
     while ($row = mysql_fetch_assoc($result)) {
-        $stringData = "{$row['File']},{$row['Class']},{$row['targetVersion']},{$row['runFlag']},{$row['runAsRoot']},{$row['xfailBugID']}\n";
+        $stringData = "{$row['File']},{$row['Class']},{$row['run_flag']},{$row['run_as_root']},{$row['xfail_bug_id']}\n";
         fwrite ($fh, $stringData);
     }
     fclose($fh);
@@ -369,7 +369,7 @@ function write_all_tests_csv() {
 
 function mgnt_make_test_array() {
     $tempArray = array();
-    $query = "select id, File, Class, targetVersion, testRunFlag, runAsRoot, xfailBugID from auto_test_case order by File, Class";
+    $query = "select id, File, Class, run_flag, run_as_root, xfail_bug_id from auto_test_case order by File, Class";
     connect_db();
     $result = mysql_query($query);
     while ($row = mysql_fetch_assoc($result)) {
@@ -387,10 +387,9 @@ function mgnt_make_test_array() {
         $tempArray[$row['File']][$row['id']]['File'] = $row['File'];
         $tempArray[$row['File']][$row['id']]['Class'] = $row['Class'];
         $tempArray[$row['File']][$row['id']]['id'] = $row['id'];
-        $tempArray[$row['File']][$row['id']]['targetVersion'] = $row['targetVersion'];
-        $tempArray[$row['File']][$row['id']]['testRunFlag'] = $row['testRunFlag'];
-        $tempArray[$row['File']][$row['id']]['runAsRoot'] = $row['runAsRoot'];
-        $tempArray[$row['File']][$row['id']]['xfailBugID'] = $row['xfailBugID'];
+        $tempArray[$row['File']][$row['id']]['run_flag'] = $row['run_flag'];
+        $tempArray[$row['File']][$row['id']]['run_as_root'] = $row['run_as_root'];
+        $tempArray[$row['File']][$row['id']]['xfail_bug_id'] = $row['xfail_bug_id'];
     }
     mysql_free_result($result);
     return $tempArray;
@@ -414,7 +413,7 @@ function mgnt_get_suite_names() {
 
 function mgnt_get_tests_in_suite($suiteName) {
     $tempArray = array();
-    $query = "select * from auto_test_suites where auto_suite_name=\"{$suiteName}\" order by testFile, testClass";
+    $query = "select * from auto_test_suites where auto_suite_name=\"{$suiteName}\" order by test_file, test_class";
     connect_db();
     $result = mysql_query($query);
     if (!$result) {
@@ -424,8 +423,8 @@ function mgnt_get_tests_in_suite($suiteName) {
     while ($row = mysql_fetch_assoc($result)) {
         $xarray = array();
         array_push ($tempArray, $xarray);
-        $xarray['testFile'] = $row['testFile'];
-        $xarray['testClass'] = $row['testClass'];
+        $xarray['test_file'] = $row['test_file'];
+        $xarray['test_class'] = $row['test_class'];
         $xarray['id'] = $row['id'];
     }
     mysql_free_result($result);
@@ -435,7 +434,7 @@ function mgnt_get_tests_in_suite($suiteName) {
 
 function fetch_suites_that_include_test($file_class) {
     list($test_file, $test_class) = explode(":", $file_class);
-    $query = "select auto_suite_name from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
+    $query = "select auto_suite_name from auto_test_suites where test_file=\"$test_file\" and test_class=\"$test_class\"";
     connect_db();
     $query_info = mysql_query($query);
     $suites = array();
@@ -463,33 +462,18 @@ function fetch_total_number_of_jobs_in_database() {
 function display_all_test_cases() {
     global $COLORS;
     $test_count = 0;
-    $ini_array = parse_ini_file("database.ini");
-    $query = "select File, Class, targetVersion, testRunFlag, xfailBugID, runAsRoot, testLinkId from auto_test_case order by File, Class";
+    $query = "select File, Class, run_flag, xfail_bug_id, run_as_root from auto_test_case order by File, Class";
     connect_db();
     $result = mysql_query($query);
     echo "<table border=1>";
-    if ($ini_array["testlink"] == "enabled") {
-        echo "<tr><th>File Name</th><th>Test Class</th><th>Target Version</th><th>Run Flag</th><th>XFAIL Defect ID</th><th>Run as root</th><th>TestLink Name</th></tr>";
-    } else {
-        echo "<tr><th>File Name</th><th>Test Class</th><th>Target Version</th><th>Run Flag</th><th>XFAIL Defect ID</th><th>Run as root</th></tr>";
-    }
+    echo "<tr><th>File Name</th><th>Test Class</th><th>Run Flag</th><th>XFAIL Defect ID</th><th>Run as root</th></tr>";
     while ($row = mysql_fetch_assoc($result)) {
         echo "<tr bgcolor={$COLORS['PASTEY']}>";
         echo "<td>".$row['File']."</td>";
         echo "<td>".$row['Class']."</td>";
-        echo "<td>".$row['targetVersion']."</td>";
-        echo "<td>".$row['testRunFlag']."</td>";
-        echo "<td>".$row['xfailBugID']."</td>";
-        echo "<td>".$row['runAsRoot']."</td>";
-        if ($ini_array["testlink"] == "enabled") {
-              if ($row['testLinkId'] > 0) {
-                $tlResult = mysql_query("select name from testlink.nodes_hierarchy where id in (select parent_id from testlink.nodes_hierarchy where id={$row['testLinkId']})");
-                $tlValue = mysql_fetch_assoc($tlResult);
-                echo "<td>".$tlValue['name']."</td>";
-            } else {
-                echo "<td bgcolor={$COLORS['YELLOW']}>Not in TestLink</td>";
-            }
-        }
+        echo "<td>".$row['run_flag']."</td>";
+        echo "<td>".$row['xfail_bug_id']."</td>";
+        echo "<td>".$row['run_as_root']."</td>";
         echo "</tr>";
         $test_count += 1;
     }
@@ -511,8 +495,8 @@ function display_test_to_suite_matrix() {
     $query = "select File, Class, auto_suite_name ".
         "from auto_test_case ".
         "LEFT JOIN auto_test_suites ".
-        "on auto_test_case.File=auto_test_suites.testFile ".
-        "and auto_test_case.Class=auto_test_suites.testClass ".
+        "on auto_test_case.File=auto_test_suites.test_file ".
+        "and auto_test_case.Class=auto_test_suites.test_class ".
         "order by File, Class, auto_suite_name";
     $suiteArray = array();
     $result = mysql_query($query);
@@ -636,17 +620,16 @@ function display_test_results_admin() {
     $now = getdate();
     $current_date = date('Y-m-d H:i:s', $now[0]);
     if ($first_row) {
-        $oldest_date = date('Y-m-d H:i:s', $first_row['startTime']);
+        $oldest_date = date('Y-m-d H:i:s', $first_row['start_time']);
     } else {
         $oldest_date = "";
     }
     if ($last_row) {
-        $newest_date = date('Y-m-d H:i:s', $last_row['startTime']);
+        $newest_date = date('Y-m-d H:i:s', $last_row['start_time']);
     } else {
         $newest_date = "";
     }
     
-    //echo "<table border=1 cellpadding=2>";
     echo "<form action=\"{$_SERVER['PHP_SELF']}?frame=management_right&manage_id={$_GET['manage_id']}\" target=\"management_right\" method=\"post\">\n";
     echo "<input type=\"hidden\" name=\"del_results\" value=1/>\n";
     echo "<strong>Total test runs in the database: </strong>$count<br />";
@@ -667,19 +650,17 @@ function display_test_results_admin() {
     echo "</select>\n<br />";
     echo "<input type=\"submit\" name=\"submit\" value=\"Delete\" /></td></tr>\n";
     echo "</form>\n";
-    //echo "</table>\n";
 }
 
 
-function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $runAsRoot, $xfailBugID) {
-    // Function to try to insert file , Class, targetversion into the
-    // auto_test_case table.  If there is a file+class already in the
-    // table, check the targetVersion.  If not equal add a new item.
+function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $run_as_root, $xfail_bug_id) {
+    // Function to try to insert file , Class, into the
+    // auto_test_case table.
     $hay = array (1=>'', 'skip', 'xfail');
-    $selectQuery = "select File, Class, targetVersion, testRunFlag, runAsRoot, testLinkId, xfailBugID ".
+    $selectQuery = "select File, Class, run_flag, run_as_root, xfail_bug_id ".
             "from auto_test_case ".
-            "where File=\"{$fileName}\"".
-            " and Class=\"{$className}\"";
+            "where File=\"{$fileName}\" ".
+            "and Class=\"{$className}\"";
     $ini_array = parse_ini_file("database.ini");
     connect_db();
     $info = array();
@@ -691,90 +672,62 @@ function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $r
     }
     while ($row = mysql_fetch_assoc($result)) {
         if (array_key_exists ("File", $row)) {
-            // We have a file already check the version
-            if ($row['targetVersion'] == $tgtVersion) {
-                // If the override flag doesn't exist continue 
-                if (empty ($_POST['overrideDB'])) {
-                    return 1;
-                } elseif ($_POST['overrideDB'] != 1) {
-                    return -1;
-                }
-                // Target version is the same, and we are overriding, check if we change anything.
-                $updateValues = "";
-                if (array_key_exists ("testRunFlag", $row)) {
-                    // We now check thr testRunFlag, if this is different use the new one.
-                    $runTimeFlag = strtolower ($runTimeFlag);
-                    if (array_search ($runTimeFlag, $hay)) {
-                        if ($runTimeFlag != $row['testRunFlag']) {
-                            // The new flag is different from the one in DB.
-                            $updateValues = "testRunFlag=\"{$runTimeFlag}\"";
-                        }
-                        if (($runTimeFlag == "xfail") or ($runTimeFlag == "skip")) {
-                            // The xfail flag is up, we must to update the XFAIL BUG ID
-                            if ($xfailBugID != "") {
-                                if ($updateValues != "") {$updateValues .= ", ";}
-                                $updateValues .= "xfailBugID=\"{$xfailBugID}\"";
-                            } elseif ($row['xfailBugID'] == "") {
-                                // No new update value, and no old value, must stop
-                                return -1;
-                            }
-                        } elseif ($xfailBugID != $row['xfailBugID']) {
-                            // If the xfail flag is not set, we need to remove the xfailBugID
-                            if ($row['xfailBugID'] != "") {
-                                if ($updateValues != "") {$updateValues .= ", ";}
-                                $updateValues .= "xfailBugID=NULL";
-                            }
-                        }
-                    }
-                } 
-                // **** Build the other updates from this point.
-                // Check if we have change the testLinkId.
-                if ($ini_array["testlink"] == "enabled") {
-                    if ($row['testLinkId'] == "") {
-                        $idResult = mysql_query("select id from testlink.tcversions where ".
-                                    "summary like \"%{$fileName}%\" and summary like \"%{$className}%\"");
-                        $testLinkID = 0;
-                        while ($idRow = mysql_fetch_assoc($idResult)) {
-                            $testLinkID = $idRow['id'];
-                        }
-                        mysql_free_result($idResult);
-                        if ($testLinkID != 0) {
-                            if ($updateValues != "") {$updateValues .= ", ";}
-                            $updateValues .= "testLinkId={$testLinkID}";
-                        }
-                    }
-                }
-                // Check if this test will be running as root.
-                if (trim($runAsRoot) != "") {
-                    if ($row['runAsRoot'] != $runAsRoot) {
-                        if ($updateValues != "") {$updateValues .= ", ";}
-                        $updateValues .= "runAsRoot={$runAsRoot}";
-                    }
-                }
-                if ($updateValues != "") {
-                    $updateQuery = "update auto_test_case set ".$updateValues.
-                        " where File=\"{$fileName}\"".
-                        " and Class=\"{$className}\"".
-                        " and targetVersion={$tgtVersion}";
-                    $result = mysql_query($updateQuery);
-                    if ($result != TRUE) {
-                        echo "\n".$updateQuery."\n";
-                        die('Invalid query: '.mysql_error());
-                        return -1;
-                    } else {
-                        return 2;
-                    }
-                } else {
-                    return 1;
-                }
-            }
+			$updateValues = "";
+			if (array_key_exists ("run_flag", $row)) {
+				// We now check thr run_flag, if this is different use the new one.
+				$runTimeFlag = strtolower ($runTimeFlag);
+				if (array_search ($runTimeFlag, $hay)) {
+					if ($runTimeFlag != $row['run_flag']) {
+						// The new flag is different from the one in DB.
+						$updateValues = "run_flag=\"{$runTimeFlag}\"";
+					}
+					if (($runTimeFlag == "xfail") or ($runTimeFlag == "skip")) {
+						// The xfail flag is up, we must to update the XFAIL BUG ID
+						if ($xfail_bug_id != "") {
+							if ($updateValues != "") {$updateValues .= ", ";}
+							$updateValues .= "xfail_bug_id=\"{$xfail_bug_id}\"";
+						} elseif ($row['xfail_bug_id'] == "") {
+							// No new update value, and no old value, must stop
+							return -1;
+						}
+					} elseif ($xfail_bug_id != $row['xfail_bug_id']) {
+						// If the xfail flag is not set, we need to remove the xfail_bug_id
+						if ($row['xfail_bug_id'] != "") {
+							if ($updateValues != "") {$updateValues .= ", ";}
+							$updateValues .= "xfail_bug_id=NULL";
+						}
+					}
+				}
+			} 
+			// Check if this test will be running as root.
+			if (trim($run_as_root) != "") {
+				if ($row['run_as_root'] != $run_as_root) {
+					if ($updateValues != "") {$updateValues .= ", ";}
+					$updateValues .= "run_as_root={$run_as_root}";
+				}
+			}
+			if ($updateValues != "") {
+				$updateQuery = "update auto_test_case set ".$updateValues.
+					" where File=\"{$fileName}\"".
+					" and Class=\"{$className}\"";
+				$result = mysql_query($updateQuery);
+				if ($result != TRUE) {
+					echo "\n".$updateQuery."\n";
+					die('Invalid query: '.mysql_error());
+					return -1;
+				} else {
+					return 2;
+				}
+			} else {
+				return 1;
+			}
         }
             
     }
     mysql_free_result($result);
     // Looks like there arn't any stuff left.
-    $insertQuery = "insert into auto_test_case (File, Class, targetVersion, testRunFlag) ".
-            "values (\"{$fileName}\", \"{$className}\", \"{$tgtVersion}\", \"{$runTimeFlag}\")";
+    $insertQuery = "insert into auto_test_case (File, Class, run_flag) ".
+            "values (\"{$fileName}\", \"{$className}\", \"{$runTimeFlag}\")";
     $result = mysql_query($insertQuery);
     if ($result != TRUE) {
         echo "\n".$insertQuery."\n";
@@ -897,13 +850,13 @@ function mgnt_right_suite_page() {
             // First update all the suites base on SuiteMod
             // First generate a list for each suite and push it into old list
             $oldSuiteItemList = array();
-            $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name in $suiteNameString order by testFile, testClass, auto_suite_name");
+            $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name in $suiteNameString order by test_file, test_class, auto_suite_name");
             if (!$dbResult) {
                 echo "Auto encounter database error<br>";
                 die('Invalid query: '.mysql_error());
             }
             while ($row = mysql_fetch_assoc($dbResult)) {
-                $oldSuiteItemList[] = $row['auto_suite_name'].",".$row['testFile'].",".$row['testClass'];
+                $oldSuiteItemList[] = $row['auto_suite_name'].",".$row['test_file'].",".$row['test_class'];
             }
             // Free the dbresult 
             mysql_free_result($dbResult);
@@ -918,8 +871,8 @@ function mgnt_right_suite_page() {
                     list ($workSuiteName, $workFileName, $workClassName) = split (",", $workItem);
                     $dbResult = mysql_query("delete from auto_test_suites where ".
                             "auto_suite_name=\"{$workSuiteName}\" ".
-                            "and testFile=\"{$workFileName}\" ".
-                            "and testClass=\"{$workClassName}\"");
+                            "and test_file=\"{$workFileName}\" ".
+                            "and test_class=\"{$workClassName}\"");
                     if (!$dbResult) {
                         echo "Auto encounter database error<br>";
                         die('Invalid query: '.mysql_error());
@@ -932,7 +885,7 @@ function mgnt_right_suite_page() {
                     $idQuery = mysql_query("select id from auto_test_case where File=\"{$workFileName}\" and Class=\"{$workClassName}\"");
                     $testID = mysql_fetch_assoc($idQuery);
                     $addQuery = "insert into auto_test_suites ".
-                        "(auto_suite_name, testFile, testClass, id) values ".
+                        "(auto_suite_name, test_file, test_class, id) values ".
                         "(\"{$workSuiteName}\", \"{$workFileName}\", \"{$workClassName}\", {$testID['id']})";
                     $dbResult = mysql_query($addQuery);
                     if (!$dbResult) {
@@ -958,14 +911,14 @@ function mgnt_right_suite_page() {
                     // Check if it is already in the suite
                     $query = "select * from auto_test_suites where ".
                         "auto_suite_name=\"{$adToSuite}\" ".
-                        "and testFile=\"{$adFile}\" ".
-                        "and testClass=\"{$adClass}\"";
+                        "and test_file=\"{$adFile}\" ".
+                        "and test_class=\"{$adClass}\"";
                     $idQuery = mysql_query($query);
                     $tQueryValue = mysql_fetch_assoc($idQuery);
                     if (empty ($tQueryValue)) {
                         // Suite don't have this test, lets add it
                         $addQuery = "insert into auto_test_suites ".
-                            "(auto_suite_name, testFile, testClass, id) values ".
+                            "(auto_suite_name, test_file, test_class, id) values ".
                             "(\"{$adToSuite}\", \"{$adFile}\", \"{$adClass}\", {$testID['id']})";
                         $dbResult = mysql_query($addQuery);
                         if (!$dbResult) {
@@ -978,7 +931,7 @@ function mgnt_right_suite_page() {
             }
         }
         // Now print the suite(s)
-        $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name in $suiteNameString order by testFile, testClass, auto_suite_name");
+        $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name in $suiteNameString order by test_file, test_class, auto_suite_name");
         if (!$dbResult) {
             echo "Auto encounter database error<br>";
             die('Invalid query: '.mysql_error());
@@ -986,14 +939,14 @@ function mgnt_right_suite_page() {
         // First create an array of suite to test
         $test2SuiteA = array();
         while ($row = mysql_fetch_assoc($dbResult)) {
-            if (!array_key_exists ($row['testFile'], $test2SuiteA)) {
-                $test2SuiteA[$row['testFile']] = array();
+            if (!array_key_exists ($row['test_file'], $test2SuiteA)) {
+                $test2SuiteA[$row['test_file']] = array();
             }
-            if (!array_key_exists ($row['testClass'], $test2SuiteA[$row['testFile']])) {
-                $test2SuiteA[$row['testFile']][$row['testClass']] = array();
+            if (!array_key_exists ($row['test_class'], $test2SuiteA[$row['test_file']])) {
+                $test2SuiteA[$row['test_file']][$row['test_class']] = array();
             }
             // This is one messy 3D array
-            $test2SuiteA[$row['testFile']][$row['testClass']][$row['auto_suite_name']] = 1;
+            $test2SuiteA[$row['test_file']][$row['test_class']][$row['auto_suite_name']] = 1;
         }
         // Free the db results structure.
         mysql_free_result($dbResult);
@@ -1023,8 +976,8 @@ function mgnt_right_suite_page() {
         echo "</tr>\n";
         // Now generate the check boxes using the test2SuiteA array
         $count = 0;
-        foreach ($test2SuiteA as $testFile => $testClassList) {
-            foreach ($testClassList as $testClass => $suiteList) {
+        foreach ($test2SuiteA as $test_file => $test_classList) {
+            foreach ($test_classList as $test_class => $suiteList) {
                 if (($count % 2) == 0) {
                     $bgc = $COLORS['LIGHTBLUE'];
                 } else {
@@ -1040,15 +993,15 @@ function mgnt_right_suite_page() {
 						$count += 2;
 		            }
                 echo "<tr bgcolor={$bgc}>";
-                echo "<td>{$testFile}</td><td>{$testClass}</td>\n";
+                echo "<td>{$test_file}</td><td>{$test_class}</td>\n";
                 foreach ($_GET['suiteNameList'] as $gsName) {
                     if ($gsName == "") {
                         continue;
                     }
                     if (array_key_exists ($gsName, $suiteList)) {
-                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>\n";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
                     } else {
-                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" name=\"SuiteMod[]\" value=\"{$gsName},{$testFile},{$testClass}\"/></td>\n";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
                     }
                 }
                 echo "</tr>\n";
@@ -1091,8 +1044,8 @@ function mgnt_right_suite_page_old() {
                 list ($rmFile, $rmClass) = split (",",$testToRemove);
                 $delQuery = "delete from auto_test_suites ".
                     "where auto_suite_name=\"{$_GET['suiteName']}\" and ".
-                    "testFile=\"{$rmFile}\" and ".
-                    "testClass=\"{$rmClass}\"";
+                    "test_file=\"{$rmFile}\" and ".
+                    "test_class=\"{$rmClass}\"";
                 $dbResult = mysql_query($delQuery);
                 if (!$dbResult) {
                     echo $delQuery;
@@ -1113,13 +1066,13 @@ function mgnt_right_suite_page_old() {
                 mysql_free_result($idQuery);
                 $query = "select * from auto_test_suites where ".
                     "auto_suite_name=\"{$_GET['suiteName']}\" ".
-                    "and testFile=\"{$adFile}\" ".
-                    "and testClass=\"{$adClass}\"";
+                    "and test_file=\"{$adFile}\" ".
+                    "and test_class=\"{$adClass}\"";
                 $idQuery = mysql_query($query);
                 $tQueryValue = mysql_fetch_assoc($idQuery);
                 if (empty ($tQueryValue)) {
                     $addQuery = "insert into auto_test_suites ".
-                        "(auto_suite_name, testFile, testClass, id) values ".
+                        "(auto_suite_name, test_file, test_class, id) values ".
                         "(\"{$_GET['suiteName']}\", \"{$adFile}\", \"{$adClass}\", {$testID['id']})";
                     $dbResult = mysql_query($addQuery);
                     if (!$dbResult) {
@@ -1129,7 +1082,7 @@ function mgnt_right_suite_page_old() {
                 mysql_free_result($idQuery);
             }
         }
-        $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name=\"{$_GET['suiteName']}\" order by testFile, testClass");
+        $dbResult = mysql_query("select * from auto_test_suites where auto_suite_name=\"{$_GET['suiteName']}\" order by test_file, test_class");
         if (!$dbResult) {
             echo "Auto encounter database error<br>";
             mysql_free_result($dbResult);
@@ -1153,8 +1106,8 @@ function mgnt_right_suite_page_old() {
                 $bgc = $COLORS['WHITE'];
             }
             echo "<tr bgcolor={$bgc}>";
-            echo "<td align=center><input type=\"checkbox\" name=\"del[]\" value=\"{$row['testFile']},{$row['testClass']}\"/></td>";
-            echo "<td>{$row['testFile']}</td><td>{$row['testClass']}</td>";
+            echo "<td align=center><input type=\"checkbox\" name=\"del[]\" value=\"{$row['test_file']},{$row['test_class']}\"/></td>";
+            echo "<td>{$row['test_file']}</td><td>{$row['test_class']}</td>";
             echo "</tr>\n";
             $count += 1;
         }
@@ -1221,7 +1174,7 @@ function delete_test_cases($tests) {
     connect_db();
     foreach ($tests as $this_test) {
         list($test_file, $test_class) = explode(":", $this_test);
-        $del_test_from_suites = "delete from auto_test_suites where testFile=\"$test_file\" and testClass=\"$test_class\"";
+        $del_test_from_suites = "delete from auto_test_suites where test_file=\"$test_file\" and test_class=\"$test_class\"";
         $del_test_case = "delete from auto_test_case where File=\"$test_file\" and Class=\"$test_class\"";
         mysql_query($del_test_from_suites);
         mysql_query($del_test_case);
@@ -1249,9 +1202,9 @@ function delete_test_results($value, $interval) {
     $before = fetch_total_number_of_jobs_in_database();
     
     connect_db();
-    $query = "delete from auto_test_jobs where startTime < $remove_older_than";
+    $query = "delete from auto_test_jobs where start_time < $remove_older_than";
     mysql_query($query);
-    $query = "delete from auto_test_item where startTime < $remove_older_than";
+    $query = "delete from auto_test_item where start_time < $remove_older_than";
     mysql_query($query);    
     
     $after = fetch_total_number_of_jobs_in_database();

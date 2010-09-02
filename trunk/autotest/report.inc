@@ -43,12 +43,12 @@ function make_machine_filter () {
     <select name=machineList[] multiple size=5>
     <?php
     connect_db ();
-    $qstring = "select distinct primeTestUnit from auto_test_jobs";
+    $qstring = "select distinct test_host from auto_test_jobs";
     $result = mysql_query ($qstring);
     echo "<option value=all>all</option>\n";
     while ($row = mysql_fetch_assoc ($result)) {
-        echo "<option value=\"{$row['primeTestUnit']}\">".
-            "{$row['primeTestUnit']} </option>\n";
+        echo "<option value=\"{$row['test_host']}\">".
+            "{$row['test_host']} </option>\n";
     }
     mysql_free_result ($result);
     ?>
@@ -59,7 +59,7 @@ function make_machine_filter () {
 
 function make_job_list () {
     ?>
-    <select name=jobIDList[] multiple size=5>
+    <select name=job_idList[] multiple size=5>
     <?php
     connect_db ();
     $qstring = "select id from auto_test_jobs order by id desc";
@@ -93,19 +93,19 @@ function suiteListHTML () {
 
 function fileFilterHTML ($multi) {
     // Test file query string.
-    $qstring = "select distinct testFile from auto_test_item order by testFile";
+    $qstring = "select distinct test_file from auto_test_item order by test_file";
     connect_db();
     $result = mysql_query ($qstring);
     if (!$result) {
         die ('Failed test file list query on auto_test_item'.mysql_error());
     }
-    echo "<select name=testFile[] {$multi} size=5>";
+    echo "<select name=test_file[] {$multi} size=5>";
     if ($multi) {
         echo "<option value=all>all</option>";
     }
     while ($value = mysql_fetch_assoc ($result)) {
         // <option value="test1.py">test1.py</option>
-        echo "<option value=\"".$value['testFile']."\">".$value['testFile']."</option>\n";
+        echo "<option value=\"".$value['test_file']."\">".$value['test_file']."</option>\n";
     }
     mysql_free_result ($result);
     echo "</select>";
@@ -113,19 +113,19 @@ function fileFilterHTML ($multi) {
 
 function testFilterHTML ($multi, $whereData="") {
     // Test Class query string.
-    $qstring = "select distinct testClass from auto_test_item ".$whereData." order by testClass";
+    $qstring = "select distinct test_class from auto_test_item ".$whereData." order by test_class";
     connect_db ();
     $result = mysql_query ($qstring);
     if (!$result) {
         die ('Failed test class list query on auto_test_item'.mysql_error());
     }
-    echo "<select name=testClass[] {$multi} size=5>";
+    echo "<select name=test_class[] {$multi} size=5>";
     if ($multi) {
         echo "<option value=all>all</option>";
     }
     while ($value = mysql_fetch_assoc ($result)) {
         // <option value="test1.py">test1.py</option>
-        echo "<option value=\"".$value['testClass']."\">".$value['testClass']."</option>";
+        echo "<option value=\"".$value['test_class']."\">".$value['test_class']."</option>";
     }
     mysql_free_result ($result);
     echo "</select>";
@@ -235,7 +235,7 @@ function make_report_left () {
 */?>
         <tr><td colspan=2>
         <br/>File Name Filter<br/>
-        <?php testFilterHTML ('onchange=\'submit()\'', "where testData != \"\"");?>
+        <?php testFilterHTML ('onchange=\'submit()\'', "where test_data != \"\"");?>
         </td></tr>
         <tr><td>
         <br/>Job ID Filter<br/>
@@ -286,10 +286,10 @@ function make_report_right ($rightArray) {
     }
 
     // File name filter
-    if (!empty($_POST['testFile'])) {
-        $fileName = $_POST['testFile'];
-    } elseif (!empty($rightArray['testFile'])) {
-        $fileName = $rightArray['testFile'];
+    if (!empty($_POST['test_file'])) {
+        $fileName = $_POST['test_file'];
+    } elseif (!empty($rightArray['test_file'])) {
+        $fileName = $rightArray['test_file'];
     } else {
         $fileName = '';
     }
@@ -307,16 +307,16 @@ function make_report_right ($rightArray) {
             $fileWhereLine .="\"".$tFileName."\"";
         }
         if ($fileWhereLine != '') {
-            $whereClause .= "testFile in (".$fileWhereLine.")";
+            $whereClause .= "test_file in (".$fileWhereLine.")";
         }
     }
             
 
     // Test name filter
-    if (!empty($_POST['testClass'])) {
-        $testName = $_POST['testClass'];
-    } elseif (!empty($rightArray['testClass'])) {
-        $testName = $rightArray['testClass'];
+    if (!empty($_POST['test_class'])) {
+        $testName = $_POST['test_class'];
+    } elseif (!empty($rightArray['test_class'])) {
+        $testName = $rightArray['test_class'];
     } else {
         $testName = '';
     }
@@ -337,16 +337,16 @@ function make_report_right ($rightArray) {
             if (!($whereClause=='')) {
                 $whereClause .= " and ";
             }
-            $whereClause .= "testClass in (".$testWhereLine.")";
+            $whereClause .= "test_class in (".$testWhereLine.")";
         }
     }
     
-    if (!empty ($_POST['jobIDList'])) {
-        $jobID = $_POST['jobIDList'];
-    } elseif (!empty($rightArray['jobID'])) {
-        $jobID = $rightArray['jobID'];
+    if (!empty ($_POST['job_idList'])) {
+        $job_id = $_POST['job_idList'];
+    } elseif (!empty($rightArray['job_id'])) {
+        $job_id = $rightArray['job_id'];
     } else {
-        $jobID = '';
+        $job_id = '';
     }
 
     if (!empty ($_POST['machineList'])) {
@@ -370,40 +370,40 @@ function make_report_right ($rightArray) {
         }
         $tempString .= ")";
         connect_db ();
-        $qstring = "select distinct id from auto_test_jobs where primeTestUnit in ".$tempString;
+        $qstring = "select distinct id from auto_test_jobs where test_host in ".$tempString;
         $result = mysql_query ($qstring);
         while ($id = mysql_fetch_assoc ($result)) {
             array_push ($acceptableID, $id['id']);
         }
         mysql_free_result ($result);
 
-        // Now check the jobID list and only keep the ones with the right Machine.
+        // Now check the job_id list and only keep the ones with the right Machine.
         // Could have done this as a sub query or join in the SQL, but this may
         // probably take less processing when we have lots of data in DB.
-        if ($jobID != '') {
-            $acceptableID = array_intersect ($jobID, $acceptableID);
+        if ($job_id != '') {
+            $acceptableID = array_intersect ($job_id, $acceptableID);
         }
-    } elseif ($jobID != '') {
-        $acceptableID = $jobID;
+    } elseif ($job_id != '') {
+        $acceptableID = $job_id;
     }
     
     if ($acceptableID != '') {
-        $testJobIDLine = '';
-        foreach ($acceptableID as $tjobID) {
-            if ($tjobID == "all") {
-                $testJobIDLine = '';
+        $testjob_idLine = '';
+        foreach ($acceptableID as $tjob_id) {
+            if ($tjob_id == "all") {
+                $testjob_idLine = '';
                 break;
             }
-            if ($testJobIDLine != '') {
-                $testJobIDLine .= ",";
+            if ($testjob_idLine != '') {
+                $testjob_idLine .= ",";
             }
-            $testJobIDLine .= $tjobID;
+            $testjob_idLine .= $tjob_id;
         }
-        if ($testJobIDLine != '') {
+        if ($testjob_idLine != '') {
             if (!($whereClause=='')) {
                 $whereClause .= " and ";
             }
-            $whereClause .= "jobID in (".$testJobIDLine.")";
+            $whereClause .= "job_id in (".$testjob_idLine.")";
         }
     }
             
@@ -412,17 +412,17 @@ function make_report_right ($rightArray) {
         echo "<a href={$_SERVER['PHP_SELF']}?frame=report_right&report_id={$reportType}";
         if ($fileName != '') { 
             foreach ($fileName as $tFileName) {
-                echo "&testFile[]={$tFileName}";
+                echo "&test_file[]={$tFileName}";
             }
         }
         if ($testName != '') {
             foreach ($testName as $tTestName) {
-                echo "&testClass[]={$tTestName}";
+                echo "&test_class[]={$tTestName}";
             }
         }
-        if ($jobID != '') {
-            foreach ($jobID as $tjobID) {
-                echo "&jobID[]={$tjobID}";
+        if ($job_id != '') {
+            foreach ($job_id as $tjob_id) {
+                echo "&job_id[]={$tjob_id}";
             }
         }
         if ($machineArray != '') {
@@ -441,7 +441,7 @@ function make_report_right ($rightArray) {
         } elseif ($reportType == 3) {
             report_suite_result ($whereClause);
         } elseif ($reportType == 10) {
-            report_testData ($whereClause);
+            report_test_data ($whereClause);
         } else {
             echo "NO REPORT SELECTED";
         }
@@ -489,7 +489,7 @@ function report_allTest ($whereClause) {
     } else {
         $whereLine = "";
     }
-    $qstring = "select * from auto_test_item".$whereLine." order by testFile, testClass, jobID desc";
+    $qstring = "select * from auto_test_item".$whereLine." order by test_file, test_class, job_id desc";
     //echo "<br/>{$qstring}<br/>";
     $result = mysql_query ($qstring);
     if (!$result) {
@@ -516,22 +516,22 @@ function report_allTest ($whereClause) {
     </tr>
     <?php
     while ($row = mysql_fetch_assoc ($result)) {
-        $startTime = date ('Y-m-d H:i:s', $row['startTime']);
-        $endTime = date ('Y-m-d H:i:s', $row['endTime']);
-        $runTime = $row['endTime'] - $row['startTime'];
+        $start_time = date ('Y-m-d H:i:s', $row['start_time']);
+        $end_time = date ('Y-m-d H:i:s', $row['end_time']);
+        $runTime = $row['end_time'] - $row['start_time'];
         echo "<tr>\n";
-        echo "<td>{$row['testFile']}</td>\n";
-        echo "<td>{$row['testClass']}</td>\n";
-        $bgc = get_status_color ($row['testStatus']);
-        echo "<td bgcolor=".$bgc.">{$row['testStatus']}</td>\n";
-        echo "<td>{$startTime}</td>\n";
-//        echo "<td>{$endTime}</td>\n";
+        echo "<td>{$row['test_file']}</td>\n";
+        echo "<td>{$row['test_class']}</td>\n";
+        $bgc = get_status_color ($row['test_status']);
+        echo "<td bgcolor=".$bgc.">{$row['test_status']}</td>\n";
+        echo "<td>{$start_time}</td>\n";
+//        echo "<td>{$end_time}</td>\n";
         echo "<td>{$runTime} sec</td>\n";
         echo "<td>{$row['utime']} sec</td>\n";
         echo "<td>{$row['stime']} sec</td>\n";
-        echo "<td>{$row['jobID']}</td>\n";
+        echo "<td>{$row['job_id']}</td>\n";
 //        echo "<td>{$row['testHTML']}</td>\n";
-//        echo "<td>{$row['testData']}</td>\n";
+//        echo "<td>{$row['test_data']}</td>\n";
         echo "</tr>\n";
     }
     mysql_free_result ($result);
@@ -555,8 +555,8 @@ function report_latestTest ($whereClause) {
     } else {
         $whereLine = "";
     }   
-    //$qstring = "select * from auto_test_item".$whereLine." order by jobID";
-    $qstring = "select * from (select * from auto_test_item".$whereLine.") jt join auto_test_case on jt.testFile=auto_test_case.File and jt.testClass=auto_test_case.Class order by jobID";
+    //$qstring = "select * from auto_test_item".$whereLine." order by job_id";
+    $qstring = "select * from (select * from auto_test_item".$whereLine.") jt join auto_test_case on jt.test_file=auto_test_case.File and jt.test_class=auto_test_case.Class order by job_id";
     //echo "<br/>{$qstring}<br/>";
     $result = mysql_query ($qstring);
     if (!$result) {
@@ -564,24 +564,23 @@ function report_latestTest ($whereClause) {
     }
     $currentTime = time ();
     while ($row=mysql_fetch_assoc ($result)) {
-        $itemName = $row['testFile'].$row['testClass'];
+        $itemName = $row['test_file'].$row['test_class'];
         if (!empty($info[$itemName])) {
-            if ($info[$itemName]['startTime'] > $row['startTime']) {
+            if ($info[$itemName]['start_time'] > $row['start_time']) {
                 continue;
             }
         }
-        $info[$itemName]['testFile'] = $row['testFile'];
-        $info[$itemName]['testClass'] = $row['testClass'];
-        $info[$itemName]['jobID'] = $row['jobID'];
-        $info[$itemName]['startTime'] = $row['startTime'];
-        $info[$itemName]['endTime'] = $row['endTime'];
+        $info[$itemName]['test_file'] = $row['test_file'];
+        $info[$itemName]['test_class'] = $row['test_class'];
+        $info[$itemName]['job_id'] = $row['job_id'];
+        $info[$itemName]['start_time'] = $row['start_time'];
+        $info[$itemName]['end_time'] = $row['end_time'];
         $info[$itemName]['stime'] = $row['stime'];
         $info[$itemName]['utime'] = $row['utime'];
-        $info[$itemName]['age'] = (int)(($currentTime - $row['endTime'])/86400);
-        $info[$itemName]['testStatus'] = $row['testStatus'];
-        $info[$itemName]['testHTML'] = $row['testHTML'];
-        $info[$itemName]['testData'] = $row['testData'];
-        $info[$itemName]['xfailBugID'] = $row['xfailBugID'];
+        $info[$itemName]['age'] = (int)(($currentTime - $row['end_time'])/86400);
+        $info[$itemName]['test_status'] = $row['test_status'];
+        $info[$itemName]['test_data'] = $row['test_data'];
+        $info[$itemName]['xfail_bug_id'] = $row['xfail_bug_id'];
     }
     ?>
     <table border=1>
@@ -605,10 +604,10 @@ function report_latestTest ($whereClause) {
     </tr>
     <?php
     foreach ($info as $row) {
-        $startTime = date ('Y-m-d H:i:s', $row['startTime']);
-        $endTime = date ('Y-m-d H:i:s', $row['endTime']);
-        $runTime = $row['endTime'] - $row['startTime'];
-        $bgc = get_status_color ($row['testStatus']);
+        $start_time = date ('Y-m-d H:i:s', $row['start_time']);
+        $end_time = date ('Y-m-d H:i:s', $row['end_time']);
+        $runTime = $row['end_time'] - $row['start_time'];
+        $bgc = get_status_color ($row['test_status']);
         if ($row['age'] > 90) {
             $agebc = "red";
         } elseif ($row['age'] > 30) {
@@ -619,19 +618,19 @@ function report_latestTest ($whereClause) {
             $agebc = "lightgreen";
         }
         echo "<tr>\n";
-        echo "<td>{$row['testFile']}</td>\n";
-        echo "<td>{$row['testClass']}</td>\n";
-        echo "<td bgcolor=".$bgc.">{$row['testStatus']}</td>\n"; 
-        echo "<td>{$row['xfailBugID']}</td>\n";
-        echo "<td>{$startTime}</td>\n";
-//        echo "<td>{$endTime}</td>\n";
+        echo "<td>{$row['test_file']}</td>\n";
+        echo "<td>{$row['test_class']}</td>\n";
+        echo "<td bgcolor=".$bgc.">{$row['test_status']}</td>\n"; 
+        echo "<td>{$row['xfail_bug_id']}</td>\n";
+        echo "<td>{$start_time}</td>\n";
+//        echo "<td>{$end_time}</td>\n";
         echo "<td>{$runTime} sec</td>\n";
         echo "<td>{$row['utime']} sec</td>\n";
         echo "<td>{$row['stime']} sec</td>\n";
         echo "<td bgcolor=".$agebc.">{$row['age']} day(s)</td>\n";
-        echo "<td>{$row['jobID']}</td>\n";
+        echo "<td>{$row['job_id']}</td>\n";
 //        echo "<td>{$row['testHTML']}</td>\n";
-        echo "<td>{$row['testData']}</td>\n";
+        echo "<td>{$row['test_data']}</td>\n";
         echo "</tr>\n";
     }   
     mysql_free_result ($result);
@@ -644,13 +643,13 @@ function report_suite_result () {
     global $COLORS;
     // Suite report is different from the job reports, so we will not take a where clauseInput.
     if (!empty ($_POST['suiteName'])) {
-        $suiteID = $_POST['suiteName'];
+        $suite_id = $_POST['suiteName'];
     }
-    if (!$suiteID) {
+    if (!$suite_id) {
         echo "Please select a test suite";
         return;
     }
-    $whereClause = "where suiteID={$suiteID} ";
+    $whereClause = "where suite_id={$suite_id} ";
     if (!empty ($_POST['SuiteReportDepth'])) {
         $depth = $_POST['SuiteReportDepth'];
     } else {
@@ -672,12 +671,12 @@ function report_suite_result () {
         }
         if ($tempString != "") {
             $tempString .= ")";
-            $whereClause .= "primeTestUnit in {$tempString}";
+            $whereClause .= "test_host in {$tempString}";
         }
     }
     connect_db ();
     // Query the job list for all the jobs run as the chosen suite upto a number of run deep.
-    $query = "select id, startTime, endTime, primeTestUnit, suiteID from auto_test_jobs ".$whereClause." order by startTime desc, id desc limit {$depth}";
+    $query = "select id, start_time, end_time, test_host, suite_id from auto_test_jobs ".$whereClause." order by start_time desc, id desc limit {$depth}";
     $dbResult = mysql_query ($query);
     //echo "<br>{$query}<br>";
     if (!$dbResult) {
@@ -708,10 +707,10 @@ function report_suite_result () {
     mysql_free_result ($dbResult);
 
     // Now get the file name and class name from the suite.
-    $query = "SELECT ats.testFile, ats.testClass, ats.auto_suite_name suite_name, atc.xfailBugID xfailBugID ".
+    $query = "SELECT ats.test_file, ats.test_class, ats.auto_suite_name suite_name, atc.xfail_bug_id xfail_bug_id ".
         "FROM auto_test_suites ats, auto_suite_list asl, auto_test_case atc ".
-        "WHERE asl.suite_name=ats.auto_suite_name and atc.File=ats.testFile and atc.Class=ats.testClass and asl.id={$suiteID} ".
-        "ORDER BY ats.testFile, ats.testClass";
+        "WHERE asl.suite_name=ats.auto_suite_name and atc.File=ats.test_file and atc.Class=ats.test_class and asl.id={$suite_id} ".
+        "ORDER BY ats.test_file, ats.test_class";
     $dbResult = mysql_query ($query);
     //echo "<br>{$query}<br>";
     if (!$dbResult) {
@@ -721,19 +720,19 @@ function report_suite_result () {
     // Now create the test case array
     $testArray = array ();
     while ($row = mysql_fetch_assoc ($dbResult)) {
-        if (!array_key_exists ($row['testFile'], $testArray)) {
+        if (!array_key_exists ($row['test_file'], $testArray)) {
             // Create an array
-            $testArray[$row['testFile']] = array ();
+            $testArray[$row['test_file']] = array ();
         }
-        $testArray[$row['testFile']][$row['testClass']] = $row['xfailBugID'];
+        $testArray[$row['test_file']][$row['test_class']] = $row['xfail_bug_id'];
     }
     mysql_free_result ($dbResult);
 
     // Last DB query, get the job items.
-    $query = "SELECT testFile, testClass, testStatus, jobID ".
+    $query = "SELECT test_file, test_class, test_status, job_id ".
         "FROM auto_test_item ".
-        "WHERE jobID in ({$idList}) ".
-        "ORDER BY jobID desc";
+        "WHERE job_id in ({$idList}) ".
+        "ORDER BY job_id desc";
     $dbResult = mysql_query ($query);
     //echo "<br>{$query}<br>";
     if (!$dbResult) {
@@ -742,13 +741,13 @@ function report_suite_result () {
     }
     $itemArray = array ();
     while ($row = mysql_fetch_assoc ($dbResult)) {
-        if (!array_key_exists ($row['jobID'], $itemArray)) {
-            $itemArray[$row['jobID']] = array ();
+        if (!array_key_exists ($row['job_id'], $itemArray)) {
+            $itemArray[$row['job_id']] = array ();
         }
-        if (!array_key_exists ($row['testFile'], $itemArray[$row['jobID']])) {
-            $itemArray[$row['jobID']][$row['testFile']] = array ();
+        if (!array_key_exists ($row['test_file'], $itemArray[$row['job_id']])) {
+            $itemArray[$row['job_id']][$row['test_file']] = array ();
         }
-        $itemArray[$row['jobID']][$row['testFile']][$row['testClass']] = $row['testStatus'];
+        $itemArray[$row['job_id']][$row['test_file']][$row['test_class']] = $row['test_status'];
     }
     mysql_free_result ($dbResult);
 
@@ -761,30 +760,30 @@ function report_suite_result () {
     $depth += 2;
     echo "<tr><th>Tests</th><th>XFAIL Bug ID</th>";
     foreach ($jobList as $job) {
-        $etime = date ('Y-m-d H:i:s', $jobArray[$job]['startTime']);
-        $endTime = date ('Y-m-d H:i:s', $jobArray[$job]['endTime']);
-        if ($jobArray[$job]['endTime'] == $jobArray[$job]['startTime']) {
+        $etime = date ('Y-m-d H:i:s', $jobArray[$job]['start_time']);
+        $end_time = date ('Y-m-d H:i:s', $jobArray[$job]['end_time']);
+        if ($jobArray[$job]['end_time'] == $jobArray[$job]['start_time']) {
             $detaTime = 0;
         } else {
-            $detaTime = $jobArray[$job]['endTime']-$jobArray[$job]['startTime'];
+            $detaTime = $jobArray[$job]['end_time']-$jobArray[$job]['start_time'];
         }
         echo "<th width=18>Job ID: {$job}<hr />{$etime}<hr />{$detaTime} sec</th>";
     }
     echo "</tr>";
-    foreach ($testArray as $testFile => $testItems) {
-        echo "<tr><th colspan={$depth} bgcolor={$COLORS['LIGHTBLUE']} align=left>{$testFile}</th></tr>\n";
-        foreach ($testItems as $testClass => $testXFID) {
-            echo "<tr><th align=left>{$testClass}</th>";
+    foreach ($testArray as $test_file => $testItems) {
+        echo "<tr><th colspan={$depth} bgcolor={$COLORS['LIGHTBLUE']} align=left>{$test_file}</th></tr>\n";
+        foreach ($testItems as $test_class => $testXFID) {
+            echo "<tr><th align=left>{$test_class}</th>";
             if ($testXFID != "") {
                 echo "<td bgcolor={$COLORS['PORANGE']}>{$testXFID}</td>";
             } else {
                 echo "<td>{$testXFID}</td>";
             }
-            //echo "<th>{$testClass['xfailBugID']}</th>";
+            //echo "<th>{$test_class['xfail_bug_id']}</th>";
             // Now for each job in the $itemArray            
             foreach ($jobList as $job) {
-                if (!empty ($itemArray[$job][$testFile][$testClass])) {
-                    $status = $itemArray[$job][$testFile][$testClass];
+                if (!empty ($itemArray[$job][$test_file][$test_class])) {
+                    $status = $itemArray[$job][$test_file][$test_class];
                 } else {
                     $status = "NOT RUN";
                 }
@@ -808,7 +807,7 @@ function report_suite_result () {
     echo "</table>\n";
 }
 
-function report_testData ($whereClause) {
+function report_test_data ($whereClause) {
     global $STCOLOR;
     global $COLORS;
 
@@ -816,11 +815,11 @@ function report_testData ($whereClause) {
     $tableKey = array ();
 
     if (!($whereClause == '')) {
-        $whereLine = " where ".$whereClause." and jobID=atj.id";
+        $whereLine = " where ".$whereClause." and job_id=atj.id";
     } else {
-        $whereLine = "where jobID=atj.id";
+        $whereLine = "where job_id=atj.id";
     }   
-    $qstring = "select distinct jobID, auto_test_item.endTime endTime, testData, atj.primeTestUnit pc from auto_test_item, auto_test_jobs atj {$whereLine} order by atj.primeTestUnit, jobID, auto_test_item.endTime";
+    $qstring = "select distinct job_id, auto_test_item.end_time end_time, test_data, atj.test_host pc from auto_test_item, auto_test_jobs atj {$whereLine} order by atj.test_host, job_id, auto_test_item.end_time";
 //    echo ("<br/>".$qstring."<br/>");
     connect_db ();
     $result = mysql_query ($qstring);
@@ -830,16 +829,16 @@ function report_testData ($whereClause) {
 
     // Push the result data into the $data array.  Key1 is the testUnit name.
     while ($row=mysql_fetch_assoc ($result)) {
-        if ($row['testData'] != '') {
-            $data[$row['pc']][$row['jobID']]['endTime'] = $row['endTime']; 
-            $testDataArray = split (",", $row['testData']);
-            foreach ($testDataArray as $tAitem) {
+        if ($row['test_data'] != '') {
+            $data[$row['pc']][$row['job_id']]['end_time'] = $row['end_time']; 
+            $test_dataArray = split (",", $row['test_data']);
+            foreach ($test_dataArray as $tAitem) {
                 if ($tAitem != '') {
                     list($itemKey, $itemValue) = split (":", $tAitem);
                     if (!in_array ($itemKey, $tableKey)) {
                         array_push ($tableKey, $itemKey);
                     }
-                    $data[$row['pc']][$row['jobID']][$itemKey] = $itemValue;
+                    $data[$row['pc']][$row['job_id']][$itemKey] = $itemValue;
                 }
             }
         }
@@ -857,10 +856,10 @@ function report_testData ($whereClause) {
     echo "</tr>\n";
     foreach ($data as $mkey => $minfo) {
         echo "<tr><th colspan={$keyCount} align=\"left\" bgcolor={$COLORS['LIGHTBLUE']}>Machine: {$mkey}</th></tr>";
-        foreach ($minfo as $jobID => $mpoint) {
+        foreach ($minfo as $job_id => $mpoint) {
             echo "<tr>\n";
-            echo "<td>{$jobID}</td>\n";
-            $etime = date ('Y-m-d H:i:s', $mpoint['endTime']);
+            echo "<td>{$job_id}</td>\n";
+            $etime = date ('Y-m-d H:i:s', $mpoint['end_time']);
             echo "<td>{$etime}</td>\n";
             if (count($tableKey) > 0) {
                 foreach ($tableKey as $tHead) {
