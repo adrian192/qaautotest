@@ -57,6 +57,6 @@ Hosts that have been configured as administrative machines can remove old tests,
 
 To add a host as an administrative machine, do the following:
   # On the database server, open the database.ini file, e.g. `/var/www/html/autotest/database.ini`
-  # Add your host IP to the line `admin = ` using commas as a separator, e.g. `admin = 127.0.0.1,192.168.0.1,10.2.20.55`
+  # Add your host IP to the line "`admin = `" using commas as a separator, e.g. "`admin = 127.0.0.1,192.168.0.1,10.2.20.55`"
   # Save your changes to the file.
   # Reload the web UI on your administrative machine to see the *Database admin* drop-down option on the *Management* page.
