@@ -21,6 +21,7 @@ $ ./harness/harness.py ./harness/csv/sample.csv -t ./tests
 }}}
   * One test case is expected to pass, one is expected to fail.  Your results should look similar to the following:
 {{{
+[test@localhost trunk]$ ./harness/harness.py ./harness/csv/sample.csv -t ./tests
 2010-08-17 10:18:21 SuiteDirectives          DEBUG    Running pre-suite validation.
 2010-08-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
 2010-08-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:PassingTestExample
@@ -56,7 +57,7 @@ Total XFAIL:  0
 This can be a useful option when creating new test cases as it allows rapid execution of a single, explicit test case.
   * From the trunk directory, run the harness, specifying the test to run at the command line:
 {{{
-$ ./harness/harness.py harness_ut.py:PassingTestExample -t ./tests`
+$ ./harness/harness.py harness_ut.py:PassingTestExample -t ./tests
 }}}
   * The output will look similar to the above.  However, only the specified test will have been run.
 
@@ -93,7 +94,7 @@ You have now successfully created a test suite called `sample`.  This suite is s
 === Run the tests, fetching the suite details from the database ===
   * From the trunk directory, run the harness, specifying suite name created above.  Optionally, add the --store option to archive the test pass/fail data into the database.
 {{{
-$ ./harness/harness.py sample -t ./tests/ --store
+$ ./harness/harness.py sample -t ./tests --store
 }}}
   * As before, one test case is expected to pass, one is expected to fail.  Your results should look similar to what was reported above.  However, one additional line will be displayed at the top of the output:
 {{{
