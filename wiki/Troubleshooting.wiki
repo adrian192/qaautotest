@@ -5,8 +5,6 @@
 This troubleshooting page should help resolve the most common initial installation and usage issues.  It will be updated as time goes by and as new issues are uncovered.
 
 
-== Database ==
-
 === When connecting to the GUI for the first time, I am prompted to download a file or I see just a list of files ===
 *Problem:* The index.php script isn't being correctly processed by your web server.
 
@@ -16,7 +14,7 @@ This troubleshooting page should help resolve the most common initial installati
   * After making these changes, you must restart your web server, e.g. `service httpd restart` or `/etc/init.d/apache2 restart`
   * If you still get a download prompt after doing the above, and if you are usign Google's Chrome web browser, clear your browser's cache and reload the page.
 
-=== Web page doesn't load ===
+=== The web page doesn't load ===
 If, when you connect to `http://<ip_address>/autotest`, you get an error indicating that the page cannot load, there are three likely explanations:
   * The web server isn't started.  Check the status of your web server with a command such as `service httpd status` or `/etc/init.d/apache2 status`.
   * There is a firewall on the machine that is preventing the web page from loading.  The simple test for this is to try stopping the firewall service, e.g. `service iptables stop`.  If this works, you should set a rule allowing HTTP access through the firewall or disable the firewall altogether.
@@ -29,10 +27,13 @@ If, when you connect to `http://<ip_address>/autotest`, you get an error indicat
   * When you install the Autotest database, a new user account is created just for this database.  The password may (should) be different than your root password.  Make sure you are using the correct password.
   * If you have forgotten your root password, the MySQL site has details on [http://dev.mysql.com/doc/refman/5.1/en/resetting-permissions.html resetting your root password].
   * If you have forgotten the password used for administering your Autotest database, you can reset the password at the SQL server console by doing the following:
-   # `mysql -u root`
-   # `mysql> use mysql`
-   # `mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='<autotest_local_user>';`
-   # `mysql> FLUSH PRIVILEGES;`
+{{{
+# mysql -u root
+mysql> use mysql;
+mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='<autotest_local_user>';
+mysql> FLUSH PRIVILEGES;
+mysql> quit
+}}}
 
 === ERROR 2002, Can't connect to local MySQL server through socket ===
 *Problem:* The MySQL server is not installed or the service isn't running.
@@ -51,6 +52,11 @@ If, when you connect to `http://<ip_address>/autotest`, you get an error indicat
    # If the line `bind-address = 127.0.0.1` is present, change `127.0.0.1` to your machine's public IP address.
    # Restart the MySQL server: `service mysql restart` or `/etc/init.d/mysql restart`.
 
-== Harness ==
+=== How do I remove old tests, suites, or test report data? ===
+Hosts that have been configured as administrative machines can remove old tests, suites, and test report records from the database through the GUI.  On the *Management* page, there should be a *Database admin* option in the drop-down menu.  Select this to administer the database.  If you do not see the *Database admin* option, your local machine is not configured as an administrative machine.
 
-No issues yet.
+To add a host as an administrative machine, do the following:
+  # On the database server, open the database.ini file, e.g. `/var/www/html/autotest/database.ini`
+  # Add your host IP to the line `admin = ` using commas as a separator, e.g. `admin = 127.0.0.1,192.168.0.1,10.2.20.55`
+  # Save your changes to the file.
+  # Reload the web UI on your administrative machine to see the *Database admin* drop-down option on the *Management* page.

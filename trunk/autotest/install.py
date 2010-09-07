@@ -246,7 +246,6 @@ def create_ini(target_dir, host, port, db_name, user, password, admin_ips):
     file.write("user = %s\n" %user)
     file.write("admin = %s\n" %admin_ips)
     file.write("password = %s\n" %password)
-    file.write("testlink = disabled\n")
     file.close()
 
 

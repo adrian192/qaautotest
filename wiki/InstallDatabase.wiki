@@ -46,13 +46,23 @@ See the [http://code.google.com/p/qaautotest/wiki/Troubleshooting Troubleshootin
 
 == Uninstalling ==
   * Remove the installed files:
-   # `rm -Rf <web_root>/autotest`
+{{{
+rm -Rf <web_root>/autotest
+}}}
+
   * Remove any local database users:
-   # `mysql -h <host> -u <user> -p`
-   # `use mysql`
-   # `select * from user;` 
-   # `drop user "<user_name>"@"%";`
-   # `drop user "<user_name>"@"localhost";`
+{{{
+# mysql -h <host> -u <user> -p
+mysql> use mysql;
+mysql> select * from user;
+mysql> drop user "<user_name>"@"%";
+mysql> drop user "<user_name>"@"localhost";
+mysql> quit
+}}}
+
   * Remove the test case database:
-   # `mysql -h <host> -u <user> -p`
-   # `drop database autotest;`
+{{{
+# mysql -h <host> -u <user> -p
+mysql> drop database autotest;
+mysql> quit
+}}}

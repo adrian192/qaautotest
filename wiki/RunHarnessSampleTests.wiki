@@ -7,31 +7,32 @@ This page describes how to run the included sample test cases through the harnes
 == Requirements ==
   * Linux host (tested with Ubuntu 10.04 and CentOS 5.5 x64)
   * Python 2.4 or later (*Ubuntu:* 2.6.5; *CentOS:* 2.4.3)
-  * A local copy of the source code.
+  * A local copy of the source code
 
-To run a test suite from the database the following additional requirements must be met:
+To run a test suite from the database, or to store test results to the database, the following additional requirements must be met:
   * MySQL client for Python (*Ubuntu:* 1.2.2; *CentOS:* 1.2.1-1; http://sourceforge.net/projects/mysql-python/)
-  * The test case database must already be installed on either the local or a remote machine.
+  * The test case database must already be installed on either the local or a remote machine
+  * The `database.ini` file in the harness directory must be configured
 
 == Running the tests from the .csv file ==
   * From the trunk directory, run the harness, specifying the .csv file containing the tests: `$ ./harness/harness.py ./harness/csv/sample.csv -t ./tests`
   * One test case is expected to pass, one is expected to fail.  Your results should look similar to the following:
 {{{
-2010-05-17 10:18:21 SuiteDirectives          DEBUG    Running pre-suite validation.
-2010-05-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
-2010-05-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:PassingTestExample
-2010-05-17 10:18:21 PassingTestExample       INFO     Running the PassingTestExample() test case.
-2010-05-17 10:18:21 PassingTestExample       INFO     Test case passed.
-2010-05-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
-2010-05-17 10:18:21 Harness                  INFO     Test harness_ut.py:PassingTestExample: PASS
-2010-05-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
-2010-05-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:FailingTestExample
-2010-05-17 10:18:21 FailingTestExample       INFO     Running the FailingTestExample() test case.
-2010-05-17 10:18:21 FailingTestExample       ERROR    Test case failed.
-2010-05-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
-2010-05-17 10:18:21 Harness                  INFO     Test harness_ut.py:FailingTestExample: FAIL
-2010-05-17 10:18:21 SuiteDirectives          DEBUG    Running post-suite validation.
-2010-05-17 10:18:21 Harness                  REPORT   
+2010-08-17 10:18:21 SuiteDirectives          DEBUG    Running pre-suite validation.
+2010-08-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
+2010-08-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:PassingTestExample
+2010-08-17 10:18:21 PassingTestExample       INFO     Running the PassingTestExample() test case.
+2010-08-17 10:18:21 PassingTestExample       INFO     Test case passed.
+2010-08-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
+2010-08-17 10:18:21 Harness                  INFO     Test harness_ut.py:PassingTestExample: PASS
+2010-08-17 10:18:21 TestDirectives           DEBUG    Running pre-test case setup.
+2010-08-17 10:18:21 Harness                  DEBUG    Run test harness_ut.py:FailingTestExample
+2010-08-17 10:18:21 FailingTestExample       INFO     Running the FailingTestExample() test case.
+2010-08-17 10:18:21 FailingTestExample       ERROR    Test case failed.
+2010-08-17 10:18:21 TestDirectives           DEBUG    Running post test case cleanup.
+2010-08-17 10:18:21 Harness                  INFO     Test harness_ut.py:FailingTestExample: FAIL
+2010-08-17 10:18:21 SuiteDirectives          DEBUG    Running post-suite validation.
+2010-08-17 10:18:21 Harness                  REPORT   
 ################################################################################
 #                             TEST RESULTS SUMMARY                             #
 ################################################################################
@@ -55,7 +56,7 @@ This can be a useful option when creating new test cases as it allows rapid exec
 
 == Running the tests from the database ==
 === Configure the local database.ini file ===
-  * Open the file harness/database.ini and update the values to match your own SQL server.  Default values are as follows:
+Open the file harness/database.ini and update the values to match your own SQL server.  Default values are as follows:
 {{{
 [database]
 host: localhost
@@ -63,6 +64,12 @@ db_name: autotest
 user: tester
 password: password
 }}}
+
+The keys hold the following data:
+  * host: The host name or IP address of your database server.
+  * db_name: The name given to the database when it was installed, e.g. autotest.
+  * user: A user account that has access rights to the test database.  This should be the user accounted created during the database installation.  The MySQL root account can be used, but this is not recommended.
+  * password: The password corresponding to the user account that will administer the database.
 
 === Create a new test suite in the database ===
   * Connect to your test database, e.g. `http://localhost/autotest`
