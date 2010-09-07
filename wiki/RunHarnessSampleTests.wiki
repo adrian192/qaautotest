@@ -6,11 +6,11 @@ This page describes how to run the included sample test cases through the harnes
 
 == Requirements ==
   * Linux host (tested with Ubuntu 10.04 and CentOS 5.5 x64)
-  * Python 2.4 or later (Ubuntu: 2.6.5; CentOS 2.4.3)
+  * Python 2.4 or later (*Ubuntu:* 2.6.5; *CentOS:* 2.4.3)
   * A local copy of the source code.
 
 To run a test suite from the database the following additional requirements must be met:
-  * MySQL client for Python (Ubuntu: 1.2.2; CentOS: 1.2.1-1; http://sourceforge.net/projects/mysql-python/)
+  * MySQL client for Python (*Ubuntu:* 1.2.2; *CentOS:* 1.2.1-1; http://sourceforge.net/projects/mysql-python/)
   * The test case database must already be installed on either the local or a remote machine.
 
 == Running the tests from the .csv file ==
