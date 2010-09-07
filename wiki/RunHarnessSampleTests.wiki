@@ -79,7 +79,7 @@ The keys hold the following data:
   * Switch from the *Upload tests* view to *Test suite management*.
   * In the text field next to *Create Suite*, enter a test suite name, e.g. sample.
   * Click *Create*.
-  * Ctrl-click the two test cases from the left-side frame, i.e. FailingTestExample and PassingTestExample.
+  * Ctrl-click the two test cases from the left-side frame, i.e. `FailingTestExample` and `PassingTestExample`.
   * Click *Add tests to suite*.
 
 You have now successfully created a test suite called `sample`.  This suite is stored in the database and contains two test cases.
