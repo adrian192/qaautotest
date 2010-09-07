@@ -5,12 +5,12 @@
 This page describes how to run the included sample test cases through the harness.
 
 == Requirements ==
-  * Linux host (tested with Ubuntu 10.04)
-  * Python 2.6 (tested with 2.6.5)
+  * Linux host (tested with Ubuntu 10.04 and CentOS 5.5 x64)
+  * Python 2.4 or later (Ubuntu: 2.6.5; CentOS 2.4.3)
   * A local copy of the source code.
 
 To run a test suite from the database the following additional requirements must be met:
-  * MySQL client for Python (tested with 1.2.2; http://sourceforge.net/projects/mysql-python/)
+  * MySQL client for Python (Ubuntu: 1.2.2; CentOS: 1.2.1-1; http://sourceforge.net/projects/mysql-python/)
   * The test case database must already be installed on either the local or a remote machine.
 
 == Running the tests from the .csv file ==
@@ -70,8 +70,8 @@ password: password
   * From the *Upload tests* menu, click the *Choose File* button.
   * Navigate to the harness/csv/sample.csv file and click *Update database*.
   * Switch from the *Upload tests* view to *Test suite management*.
-  * In the text field next to *New Suite*, enter a test suite name, e.g. sample.
-  * Click *Set working suite*.
+  * In the text field next to *Create Suite*, enter a test suite name, e.g. sample.
+  * Click *Create*.
   * Ctrl-click the two test cases from the left-side frame, i.e. FailingTestExample and PassingTestExample.
   * Click *Add tests to suite*.
 

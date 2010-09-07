@@ -17,8 +17,9 @@ This troubleshooting page should help resolve the most common initial installati
   * If you still get a download prompt after doing the above, and if you are usign Google's Chrome web browser, clear your browser's cache and reload the page.
 
 === Web page doesn't load ===
-If, when you connect to `http://localhost/autotest`, you get an error indicating that the page cannot load, there are two likely explanations:
+If, when you connect to `http://<ip_address>/autotest`, you get an error indicating that the page cannot load, there are three likely explanations:
   * The web server isn't started.  Check the status of your web server with a command such as `service httpd status` or `/etc/init.d/apache2 status`.
+  * There is a firewall on the machine that is preventing the web page from loading.  The simple test for this is to try stopping the firewall service, e.g. `service iptables stop`.  If this works, you should set a rule allowing HTTP access through the firewall or disable the firewall altogether.
   * The installation target directory wasn't the web root.  The default web root in the installation script is `/var/www/html`.  This is the default for CentOS.  Ubuntu uses `/var/www` as its default web root.  Make sure you have the correct web root configured.
 
 === ERROR 1045, Access denied for user 'root'@'localhost' (using password: YES) ===

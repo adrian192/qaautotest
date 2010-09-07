@@ -2,7 +2,7 @@
 
 = Introduction =
 
-Setting up MySQL is a straight forward process but can be challenging or intimidating for those who are not database administrators.  This page will step you through setting up a MySQL server for use with the QA Autotest database.  Detailed instructions are provided for both Ubuntu and CentOS installations.  They should be fairly consistent across distributions but they were most recently tested with Ubuntu 10.04 and CentOS 5.4.
+Setting up MySQL is a straight forward process but can be challenging or intimidating for those who are not database administrators.  This page will step you through setting up a MySQL server for use with the QA Autotest database.  Detailed instructions are provided for both Ubuntu and CentOS installations.  They should be fairly consistent across distributions but they were most recently tested with Ubuntu 10.04 and CentOS 5.5.
 
 The instructions below will accomplish the following:
   * Install the MySQL server and client packages necessary for a successful deployment of the QA Autotest database.
@@ -46,7 +46,7 @@ vi /etc/mysql/my.cnf
 sudo service mysql restart
 }}}
 
-  * You are now ready to install the database.
+  * You are now ready to [http://code.google.com/p/qaautotest/wiki/InstallDatabase install the database].
 
 
 = CentOS =
@@ -85,4 +85,4 @@ mysql> FLUSH PRIVILEGES;
 mysql> quit
 }}}
 
-  * You are now ready to install the database.
+  * You are now ready to [http://code.google.com/p/qaautotest/wiki/InstallDatabase install the database].

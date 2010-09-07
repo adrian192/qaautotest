@@ -700,7 +700,7 @@ function report_suite_result () {
     }
 
     if ($idList == "") {
-        echo "Selected test suite has not been run yet.";
+        echo "The selected test suite has not been run yet.";
         return;
     }
     // Free the result
