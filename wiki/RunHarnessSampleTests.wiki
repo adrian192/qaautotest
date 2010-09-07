@@ -66,10 +66,10 @@ password: password
 }}}
 
 The keys hold the following data:
-  * host: The host name or IP address of your database server.
-  * db_name: The name given to the database when it was installed, e.g. autotest.
-  * user: A user account that has access rights to the test database.  This should be the user accounted created during the database installation.  The MySQL root account can be used, but this is not recommended.
-  * password: The password corresponding to the user account that will administer the database.
+  * *host:* The host name or IP address of your database server.
+  * *db_name:* The name given to the database when it was installed, e.g. autotest.
+  * *user:* A user account that has access rights to the test database.  This should be the user accounted created during the database installation.  The MySQL root account can be used, but this is not recommended.
+  * *password:* The password corresponding to the user account that will administer the database.
 
 === Create a new test suite in the database ===
   * Connect to your test database, e.g. `http://localhost/autotest`
