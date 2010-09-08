@@ -207,7 +207,7 @@ class Harness(object):
             file_name, class_name = cli.split(":")
             file_name = file_name.strip()
             class_name = class_name.strip()
-            test_list.append([file_name, class_name, 1, "", ""])
+            test_list.append([file_name, class_name, "", ""])
             return test_list
         except:
             return None

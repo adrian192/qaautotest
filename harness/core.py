@@ -44,11 +44,11 @@ class TestCaseDirectives(object):
     
     def __check_uid(self):
         if run_as_root or self.config["run_as_root"]:
-           if os.geteuid() != 0:
-               self.log.error("Test case is configured to run as root but "
-                              "you are not root.  Running as UID %s."
-                              %os.geteuid())
-               return False
+            if os.geteuid() != 0:
+                self.log.error("Test case is configured to run as root but "
+                               "you are not root.  Running as UID %s."
+                               %os.geteuid())
+                return False
         return True
     
 def get_options():
