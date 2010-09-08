@@ -1,3 +1,3 @@
-file_name,test_class,run_flag,run_as_root,xfail_bug_id
+File Name,Test Class,Run Flag,Run as root,XFAIL Defect ID
 harness_ut.py,PassingTestExample,,0,
 harness_ut.py,FailingTestExample,,0,
