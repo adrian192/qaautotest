@@ -126,7 +126,7 @@ function make_management_left() {
         echo "<tr bgcolor={$COLORS['PASTEY']}><td align=center>Test is already in the database</td></tr>";
         echo "<tr bgcolor={$COLORS['YELLOW']}><td align=center>Updated the database with new value</td></tr>";
         echo "<tr bgcolor={$COLORS['RED']}><td align=center>Failed database action</td></tr>";
-        echo "<tr bgcolor={$COLORS['PORANGE']}><td align=center>Unable to process csv line</td></tr>";
+        echo "<tr bgcolor={$COLORS['PORANGE']}><td align=center>Unable to process .csv line<br>Tests marked as 'skip' or 'xfail' must include a defect ID</td></tr>";
         echo "</table>";
         echo "<p></p>";
     } elseif ($select == 2) {
@@ -466,14 +466,14 @@ function display_all_test_cases() {
     connect_db();
     $result = mysql_query($query);
     echo "<table border=1>";
-    echo "<tr><th>File Name</th><th>Test Class</th><th>Run Flag</th><th>XFAIL Defect ID</th><th>Run as root</th></tr>";
+    echo "<tr><th>File Name</th><th>Test Class</th><th>Run Flag</th><th>Run as root</th><th>XFAIL Defect ID</th></tr>";
     while ($row = mysql_fetch_assoc($result)) {
         echo "<tr bgcolor={$COLORS['PASTEY']}>";
         echo "<td>".$row['File']."</td>";
         echo "<td>".$row['Class']."</td>";
         echo "<td>".$row['run_flag']."</td>";
-        echo "<td>".$row['xfail_bug_id']."</td>";
         echo "<td>".$row['run_as_root']."</td>";
+        echo "<td>".$row['xfail_bug_id']."</td>";
         echo "</tr>";
         $test_count += 1;
     }
@@ -653,7 +653,7 @@ function display_test_results_admin() {
 }
 
 
-function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $run_as_root, $xfail_bug_id) {
+function add_csv_file_to_db($fileName, $className, $runTimeFlag, $run_as_root, $xfail_bug_id) {
     // Function to try to insert file , Class, into the
     // auto_test_case table.
     $hay = array (1=>'', 'skip', 'xfail');
@@ -661,7 +661,6 @@ function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $r
             "from auto_test_case ".
             "where File=\"{$fileName}\" ".
             "and Class=\"{$className}\"";
-    $ini_array = parse_ini_file("database.ini");
     connect_db();
     $info = array();
     $result = mysql_query($selectQuery);
@@ -672,6 +671,11 @@ function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $r
     }
     while ($row = mysql_fetch_assoc($result)) {
         if (array_key_exists ("File", $row)) {
+			if (empty ($_POST['overrideDB'])) {
+				return 1;
+			} elseif ($_POST['overrideDB'] != 1) {
+                return -1;
+            }
 			$updateValues = "";
 			if (array_key_exists ("run_flag", $row)) {
 				// We now check thr run_flag, if this is different use the new one.
@@ -688,7 +692,7 @@ function add_csv_file_to_db($fileName, $className, $tgtVersion, $runTimeFlag, $r
 							$updateValues .= "xfail_bug_id=\"{$xfail_bug_id}\"";
 						} elseif ($row['xfail_bug_id'] == "") {
 							// No new update value, and no old value, must stop
-							return -1;
+							return 3;
 						}
 					} elseif ($xfail_bug_id != $row['xfail_bug_id']) {
 						// If the xfail flag is not set, we need to remove the xfail_bug_id
@@ -778,7 +782,7 @@ function mgnt_right_add_test() {
         foreach ($fileArray as $id => $line) {
             $itemList = split (",", stripcslashes($line));
             if (strstr($itemList[0], ".py")) {
-                $iRC = add_csv_file_to_db (trim($itemList[0], "\""), trim($itemList[1],"\""), $itemList[2], $itemList[3], $itemList[4], trim($itemList[5]));
+                $iRC = add_csv_file_to_db (trim($itemList[0], "\""), trim($itemList[1],"\""), $itemList[2], $itemList[3], trim($itemList[4]));
                 if ($iRC < 0) {
                     $bgc = "\"".$COLORS['RED']."\"";
                 } elseif ($iRC == 0) {
@@ -787,9 +791,18 @@ function mgnt_right_add_test() {
                     $bgc = "\"".$COLORS["PASTEY"]."\"";
                 } elseif ($iRC == 2) {
                     $bgc = "\"".$COLORS["YELLOW"]."\"";
+                } elseif ($iRC == 3) {
+                    $bgc = "\"".$COLORS["PORANGE"]."\"";
                 }
                 echo "<tr bgcolor={$bgc}>\n";
-                foreach ($itemList as $item) {
+				$this_file = trim($itemList[0], "\"");
+				$this_class = trim($itemList[1],"\"");
+				$query = "select File, Class, run_flag, run_as_root, xfail_bug_id ".
+							   "from auto_test_case where File=\"{$this_file}\" ".
+							   "and Class=\"{$this_class}\"";
+				$result = mysql_query($query);
+				$tc_details = mysql_fetch_assoc($result);
+                foreach ($tc_details as $item) {
                     echo "<td>{$item}</td>";
                 }
                 echo "</tr>\n";

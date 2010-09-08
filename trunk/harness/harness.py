@@ -569,7 +569,7 @@ class Harness(object):
             if final_status == "FAIL":
                 final_status = "XFAIL"
             else:
-                self.log.error("Test %s:%s was expected to failed, but passed."
+                self.log.error("Test %s:%s was expected to fail, but passed."
                                %(test_status["test_file"],
                                  test_status["test_class"]))
                 final_status = "FAIL"
