@@ -386,6 +386,8 @@ class Harness(object):
         # If the test is set to "SKIP", dont' bother running it.
         if re.match("(?i)skip", test_status["run_flag"]):
             test_status["status"] = "SKIP"
+            test_status["start_time"] = time.time()
+            test_status["end_time"] = test_status["start_time"]
             self.__process_result(test_status)
             return True
         
