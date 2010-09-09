@@ -24,7 +24,7 @@ sudo /etc/init.d/apache2 restart
 
   * Set up MySQL root password.  If it wasn't set during the MySQL server installation, set up the root password on the MySQL Server: 
 {{{
-mysql -u root
+# mysql -u root
 mysql> use mysql;
 mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';
 mysql> FLUSH PRIVILEGES;
@@ -39,7 +39,7 @@ vi /etc/mysql/my.cnf
 
   `bind-address            = 127.0.0.1`
 
-  Change the IP address from 127.0.0.1 to the public IP address of the node.
+  Change the IP address from 127.0.0.1 to the public IP address of the host.
 
   * Restart mysql to make the changes take effect:
 {{{
@@ -56,7 +56,7 @@ sudo service mysql restart
 yum install mysql.x86_64 mysql-server.x86_64 MySQL-python.x86_64 httpd.x86_64 mysql php.x86_64 php-mysql.x86_64
 }}}
 
-  * Enable the MySQL service:
+  * Start the MySQL database:
 {{{
 service mysqld start
 }}}
@@ -78,7 +78,7 @@ chkconfig --level 35 httpd on
 
   * Set up MySQL root password.  If it wasn't set during the MySQL server installation, set up the root password on the MySQL Server:
 {{{
-mysql -u root
+# mysql -u root
 mysql> use mysql;
 mysql> UPDATE user SET Password=PASSWORD('new-password') WHERE user='root';
 mysql> FLUSH PRIVILEGES;
