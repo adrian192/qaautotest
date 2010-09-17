@@ -714,8 +714,8 @@ def get_local_ip():
         net_file = open("/proc/net/dev", "r")
         proc_net_dev = net_file.read()
         net_file.close()
-        find_what = re.compile(r"(\w+):")
-        all_nets = re.findall(find_what, proc_net_dev, re.M)
+        find_what = re.compile(r"(\w+):", re.MULTILINE)
+        all_nets = re.findall(find_what, proc_net_dev)
         for i in all_nets:
             if i == "lo":
                 continue
