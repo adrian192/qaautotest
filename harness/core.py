@@ -54,7 +54,7 @@ class TestCaseDirectives(object):
 def get_options():
     parser = OptionParser()
     parser.prog = sys.argv[0].split("/")[-1]
-    parser.usage = "%prog -h | <Suite|.csv|File:Class> <-c <config.ini> | -t <test_dir>>\n" + \
+    parser.usage = "%prog -h | <Suite|.csv|File:Class> <-c <config.ini> | -t <test_dir>> [-b <build_num>] \n" + \
                    "[-l <log_dir>] [--level <log_level>]" + \
                    "[--stop-on-fail] [--run-as-root] " + \
                    "[--iterations <num_iterations>] [--store]>"
@@ -65,6 +65,9 @@ def get_options():
     parser.add_option("-t", "--test-dir", action="store", type="string",
                       dest="test_dir", help="The path to the directory in "
                       "which the tests may be found.")
+    parser.add_option("-b", "--build", action="store", type="string",
+                      dest="build", default="Unspecified", help="The build "
+                      "number of the code under test.")
     parser.add_option("-l", "--log-dir", action="store", type="string",
                       dest="log_dir", default=".", help="The directory in "
                       "which the log file should be located.  If unspecified, "
@@ -102,6 +105,10 @@ def validate_cli_options(parser):
                      "name, or .csv file in which a list of tests can be found.")
     if len(args) > 1:
         parser.error("Multiple positional arguments have been specified.")
+    if options.store_to_database == True and options.build == "Unspecified":
+        parser.error("To store test results to the database, the build number "
+                     "must be specified.  If you do not have a build number, "
+                     "enter the date, e.g. 2010-09-17.")
     try:
         if int(options.iterations) == -1:
             options.iterations = pow(2, 24) # infinite enough

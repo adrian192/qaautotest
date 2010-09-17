@@ -498,11 +498,12 @@ function report_allTest ($whereClause) {
     // Put the result into the info array
     ?>
     <table border=1>
-    <tr><th colspan=10>All Jobs Test Report
+    <tr><th colspan=11>All Jobs Test Report
     </th></tr>
     <tr><th>File Name</th>
     <th>Test Class</th>
     <th>Test Status</th>
+    <th>Build</th>
     <th>Start Time</th>
 <!--    <th>End Time</th> -->
     <th>Run Time</th>
@@ -524,6 +525,7 @@ function report_allTest ($whereClause) {
         echo "<td>{$row['test_class']}</td>\n";
         $bgc = get_status_color ($row['test_status']);
         echo "<td bgcolor=".$bgc.">{$row['test_status']}</td>\n";
+        echo "<td>{$row['build']}</td>\n";
         echo "<td>{$start_time}</td>\n";
 //        echo "<td>{$end_time}</td>\n";
         echo "<td>{$runTime} sec</td>\n";
@@ -580,16 +582,18 @@ function report_latestTest ($whereClause) {
         $info[$itemName]['age'] = (int)(($currentTime - $row['end_time'])/86400);
         $info[$itemName]['test_status'] = $row['test_status'];
         $info[$itemName]['test_data'] = $row['test_data'];
+        $info[$itemName]['build'] = $row['build'];
         $info[$itemName]['xfail_bug_id'] = $row['xfail_bug_id'];
     }
     ?>
     <table border=1>
-    <tr><th colspan=11>Latest Test Report
+    <tr><th colspan=12>Latest Test Report
     </th></tr>
     <tr><th>File Name</th>
     <th>Test Class</th>
     <th>Test Status</th>
-    <th>XFAIL Bug ID</th> 
+    <th>XFAIL Bug ID</th>
+    <th>Build</th>
     <th>Start Time</th>
     <th>Run Time</th>
     <th>User Time</th>
@@ -622,6 +626,7 @@ function report_latestTest ($whereClause) {
         echo "<td>{$row['test_class']}</td>\n";
         echo "<td bgcolor=".$bgc.">{$row['test_status']}</td>\n"; 
         echo "<td>{$row['xfail_bug_id']}</td>\n";
+        echo "<td>{$row['build']}</td>\n";
         echo "<td>{$start_time}</td>\n";
 //        echo "<td>{$end_time}</td>\n";
         echo "<td>{$runTime} sec</td>\n";
@@ -729,7 +734,7 @@ function report_suite_result () {
     mysql_free_result ($dbResult);
 
     // Last DB query, get the job items.
-    $query = "SELECT test_file, test_class, test_status, job_id ".
+    $query = "SELECT test_file, test_class, test_status, job_id, build ".
         "FROM auto_test_item ".
         "WHERE job_id in ({$idList}) ".
         "ORDER BY job_id desc";
@@ -748,6 +753,7 @@ function report_suite_result () {
             $itemArray[$row['job_id']][$row['test_file']] = array ();
         }
         $itemArray[$row['job_id']][$row['test_file']][$row['test_class']] = $row['test_status'];
+        $itemArray[$row['job_id']]['build'] = $row['build'];
     }
     mysql_free_result ($dbResult);
 
@@ -767,7 +773,8 @@ function report_suite_result () {
         } else {
             $detaTime = $jobArray[$job]['end_time']-$jobArray[$job]['start_time'];
         }
-        echo "<th width=18>Job ID: {$job}<hr />{$etime}<hr />{$detaTime} sec</th>";
+        $build = $itemArray[$job]['build'];
+        echo "<th width=18>Job ID: {$job}<hr />{$etime}<hr />Build: {$build}<hr />{$detaTime} sec</th>";
     }
     echo "</tr>";
     foreach ($testArray as $test_file => $testItems) {

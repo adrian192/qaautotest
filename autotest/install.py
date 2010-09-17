@@ -38,6 +38,7 @@ tables_list = {
 "  end_time int(32) unsigned default NULL,"
 "  test_status varchar(32) default NULL,"
 "  test_data text,"
+"  build varchar(64) NOT NULL default '',"
 "  utime float(10,4) default NULL,"
 "  stime float(10,4) default NULL,"
 "  run_time float NOT NULL default '0',"

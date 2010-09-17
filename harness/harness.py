@@ -24,7 +24,7 @@ except ImportError:
 
 def main():
     config = profile.get_config()
-    harness = Harness(config["log_dir"], config["log_level"])
+    harness = Harness(config["build"], config["log_dir"], config["log_level"])
     harness.initialize_database(os.path.join(os.path.split(os.path.abspath(__file__))[0], "database.ini"))
     harness.add_tests(config["test_dir"], config["tests"])
     harness.run_tests(config, config["store_to_database"], config["stop_on_fail"], config["iterations"], config["threads"])
@@ -36,8 +36,9 @@ def main():
 
 
 class Harness(object):
-    def __init__(self, log_dir=None, log_level=logging.DEBUG):
+    def __init__(self, build="Unspecified", log_dir=None, log_level=logging.DEBUG):
         self.harness_path = os.getcwd()
+        self.build = build
         self.__setup_logging(log_dir, log_level)
         self.dba = None # initialize with self.initialize_datbase()
         self.test_dir = "" # initialize with self.add_tests()
@@ -620,12 +621,12 @@ class Harness(object):
                 update_line += "test_status='%s'," %test["status"]
             if test["test_data"] != None:
                 update_line += "test_data='%s'," %test["test_data"]
+            update_line += "build='%s'," %self.build
             if test["stime"] != None:
                 update_line += "stime=%f," %test["stime"]
             if test["utime"] != None:
                 update_line += "utime=%f," %test["utime"]
             update_line = update_line.rstrip(",")
-            
             query_line = "insert into auto_test_item set test_file='%s',test_class='%s',job_id=%s,%s" \
                         %(test["test_file"], test["test_class"], job_id, update_line)
             db_rc = self.dba.update(query_line)
