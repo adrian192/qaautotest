@@ -10,7 +10,7 @@ This page describes how to run the included sample test cases through the harnes
   * A local copy of the source code
 
 To run a test suite from the database, or to store test results to the database, the following additional requirements must be met:
-  * MySQL client for Python (*Ubuntu:* 1.2.2; *CentOS:* 1.2.1-1; http://sourceforge.net/projects/mysql-python/)
+  * MySQL client for Python (*Ubuntu:* 1.2.2; *CentOS:* 1.2.1-1 [http://sourceforge.net/projects/mysql-python/ http://sourceforge.net/projects/mysql-python/]; *Windows:* 1.2.3c1 [http://www.codegood.com/ http://www.codegood.com/])
   * The test case database must already be installed on either the local or a remote machine
   * The `database.ini` file in the harness directory must be configured
 
