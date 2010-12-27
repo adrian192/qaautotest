@@ -1000,7 +1000,8 @@ function mgnt_right_suite_page() {
 		                echo "<tr>\n";
                         echo "<td colspan=2></td>\n";
 						foreach ($_GET['suiteNameList'] as $this_suite) {
-                        echo "<td align=center><input type=\"checkbox\" name=\"{$this_suite}_top\" onclick=\"window.parent.check_suite(window.parent.management_right.document.suite_case_mod, window.parent.management_right.document.suite_case_mod.{$this_suite}_top)\" /></td>\n";
+                            $this_suite = str_replace("-", "_", $this_suite);
+                            echo "<td align=center><input type=\"checkbox\" name=\"{$this_suite}_top\" onclick=\"window.parent.check_suite(window.parent.management_right.document.suite_case_mod, window.parent.management_right.document.suite_case_mod.{$this_suite}_top)\" /></td>\n";
 						}
                         echo "</tr>\n";
 						$count += 2;
@@ -1011,10 +1012,11 @@ function mgnt_right_suite_page() {
                     if ($gsName == "") {
                         continue;
                     }
+                    $temp_gsname = str_replace("-", "_", $gsName);
                     if (array_key_exists ($gsName, $suiteList)) {
-                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$temp_gsname}\" checked name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
                     } else {
-                        echo "<td align=center><input type=\"checkbox\" id=\"{$gsName}\" name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
+                        echo "<td align=center><input type=\"checkbox\" id=\"{$temp_gsname}\" name=\"SuiteMod[]\" value=\"{$gsName},{$test_file},{$test_class}\"/></td>\n";
                     }
                 }
                 echo "</tr>\n";
