@@ -26,7 +26,7 @@ def main():
     config = profile.get_config()
     harness = Harness(config["build"], config["log_dir"], config["log_level"])
     harness.initialize_database(os.path.join(os.path.split(os.path.abspath(__file__))[0], "database.ini"))
-    harness.add_tests(config["test_dir"], config["tests"])
+    harness.add_tests(config["test_source_dir"], config["tests"])
     harness.run_tests(config, config["store_to_database"], config["stop_on_fail"], config["iterations"], config["threads"])
     failures = harness.print_to_screen()
     if failures > 0:
@@ -78,6 +78,7 @@ class Harness(object):
             except:
                 self.log.warning("Failed to rollover the log file.  The "
                                  "results will not be recorded.")
+        self.log.log(100, " ".join(sys.argv))
     
     def initialize_database(self, ini):
         """ Attempts to create an initial connection to the database.  The
@@ -96,6 +97,8 @@ class Harness(object):
             dir(MySQLdb)
         except NameError:
             self.dba = None
+            self.log.warning("The MySQLdb package is not installed.  Tasks "
+                             "requiring access to the database will fail.")
             return False
         config = configparser.SafeConfigParser()
         try:
@@ -191,6 +194,8 @@ class Harness(object):
         tf = csv.reader(csv_file)
         for item in tf:
             if item == []: # probably an empty line or a DOS character
+                continue
+            if item[0][0] == "#": # the line is commented out
                 continue
             if re.search("(?i)\.py", item[0]):
                 test_list.append(item)
@@ -425,6 +430,18 @@ class Harness(object):
         # Import the test file and instantiate the test class.
         try:
             os.chdir(self.file_to_dir[test_status["test_file"]])
+        except OSError:
+            self.log.error("Unable to change into the directory %s.  "
+                           "You must have execute permission on the "
+                           "directory path.  Grant execute access to "
+                           "world on the directories in the test path "
+                           "or copy your tests into a directory in which "
+                           "you do have execute permissions."
+                           %self.file_to_dir[test_status["test_file"]])
+            test_status["status"] = "FAIL"
+            self.__process_result(test_status)
+            return False
+        try:
             if sys.version_info[0] < 3:
                 exec("import %s" %test_status["test_file"].split(".")[0])
                 exec("test_object = %s.%s(test_config)"
@@ -743,5 +760,8 @@ if __name__ == "__main__":
     signal.signal(signal.SIGABRT, intrupt_handle)
     signal.signal(signal.SIGINT, intrupt_handle)
     signal.signal(signal.SIGTERM, intrupt_handle)
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-24s %(levelname)-8s %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
     main()
     
