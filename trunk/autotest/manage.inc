@@ -678,7 +678,7 @@ function add_csv_file_to_db($fileName, $className, $runTimeFlag, $run_as_root, $
             }
 			$updateValues = "";
 			if (array_key_exists ("run_flag", $row)) {
-				// We now check thr run_flag, if this is different use the new one.
+				// We now check the run_flag, if this is different use the new one.
 				$runTimeFlag = strtolower ($runTimeFlag);
 				if (array_search ($runTimeFlag, $hay)) {
 					if ($runTimeFlag != $row['run_flag']) {
@@ -687,19 +687,16 @@ function add_csv_file_to_db($fileName, $className, $runTimeFlag, $run_as_root, $
 					}
 					if (($runTimeFlag == "xfail") or ($runTimeFlag == "skip")) {
 						// The xfail flag is up, we must to update the XFAIL BUG ID
-						if ($xfail_bug_id != "") {
-							if ($updateValues != "") {$updateValues .= ", ";}
-							$updateValues .= "xfail_bug_id=\"{$xfail_bug_id}\"";
-						} elseif ($row['xfail_bug_id'] == "") {
-							// No new update value, and no old value, must stop
-							return 3;
-						}
-					} elseif ($xfail_bug_id != $row['xfail_bug_id']) {
-						// If the xfail flag is not set, we need to remove the xfail_bug_id
-						if ($row['xfail_bug_id'] != "") {
-							if ($updateValues != "") {$updateValues .= ", ";}
-							$updateValues .= "xfail_bug_id=NULL";
-						}
+                        if ($xfail_bug_id == "") {
+                            return 3;
+                        }
+					}
+                    if ($xfail_bug_id != $row['xfail_bug_id']) {
+                        if (! (($xfail_bug_id == "") and ($row['xfail_bug_id'] == "NULL"))) {
+                            if ($updateValues != "") {$updateValues .= ", ";}
+                            if ($xfail_bug_id == "") {$xfail_bug_id = "NULL";}
+                            $updateValues .= "xfail_bug_id=\"{$xfail_bug_id}\"";
+                        }
 					}
 				}
 			} 
@@ -730,8 +727,9 @@ function add_csv_file_to_db($fileName, $className, $runTimeFlag, $run_as_root, $
     }
     mysql_free_result($result);
     // Looks like there arn't any stuff left.
-    $insertQuery = "insert into auto_test_case (File, Class, run_flag) ".
-            "values (\"{$fileName}\", \"{$className}\", \"{$runTimeFlag}\")";
+    if ($xfail_bug_id == "") {$xfail_bug_id = "NULL";}
+    $insertQuery = "insert into auto_test_case (File, Class, run_flag, run_as_root, xfail_bug_id) ".
+                   "values (\"{$fileName}\", \"{$className}\", \"{$runTimeFlag}\", \"{$run_as_root}\", \"{$xfail_bug_id}\")";
     $result = mysql_query($insertQuery);
     if ($result != TRUE) {
         echo "\n".$insertQuery."\n";
@@ -803,6 +801,7 @@ function mgnt_right_add_test() {
 				$result = mysql_query($query);
 				$tc_details = mysql_fetch_assoc($result);
                 foreach ($tc_details as $item) {
+                    if ($item == "NULL") {$item = "";}
                     echo "<td>{$item}</td>";
                 }
                 echo "</tr>\n";
@@ -810,6 +809,7 @@ function mgnt_right_add_test() {
                 if ($id == 0) {
                     echo "<tr>\n";
                     foreach ($itemList as $item) {
+                        if ($item == "NULL") {$item = "";}
                         echo "<th>{$item}</th>\n";
                     }
                     echo "</tr>\n";
