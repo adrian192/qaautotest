@@ -406,6 +406,8 @@ class Harness(object):
             self.log.error("The test file %s does not exist in the specified "
                            "test path %s"
                            %(test_status["test_file"], self.test_dir))
+            test_status["status"] = "FAIL"
+            self.__process_result(test_status)
             return False
             
         if not directives.start():
