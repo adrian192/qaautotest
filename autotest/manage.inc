@@ -204,7 +204,7 @@ function make_management_left() {
             echo "</td></tr>\n";
 		    echo "<th size=15 align=left colspan=2><br><br>Add tests to the selected suite:</th>\n";
             echo "<tr><td colspan=2>\n";
-            echo "<select name=addSuiteList[] multiple>\n";
+            echo "<select name=addSuiteList[] multiple size=20>\n";
             foreach ($tlArray as $fileName => $fileItems) {
                 echo "<optgroup label=\"{$fileName}\">\n";
                 foreach ($fileItems as $test) {
