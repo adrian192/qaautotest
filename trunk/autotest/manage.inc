@@ -468,6 +468,10 @@ function display_all_test_cases() {
     echo "<table border=1>";
     echo "<tr><th>File Name</th><th>Test Class</th><th>Run Flag</th><th>Run as root</th><th>XFAIL Defect ID</th></tr>";
     while ($row = mysql_fetch_assoc($result)) {
+        foreach ($row as &$value) {
+            if ($value == "NULL") {$value = "";}
+        }
+        unset($value);
         echo "<tr bgcolor={$COLORS['PASTEY']}>";
         echo "<td>".$row['File']."</td>";
         echo "<td>".$row['Class']."</td>";
