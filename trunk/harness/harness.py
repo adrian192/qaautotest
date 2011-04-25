@@ -443,6 +443,8 @@ class Harness(object):
             test_status["status"] = "FAIL"
             self.__process_result(test_status)
             return False
+        self.log.debug("Running test %s:%s" %(test_status["test_file"],
+                                              test_status["test_class"]))
         try:
             if sys.version_info[0] < 3:
                 exec("import %s" %test_status["test_file"].split(".")[0])
@@ -479,8 +481,6 @@ class Harness(object):
         
         test_status["start_time"] = time.time()
         test_status["end_time"] = time.time()
-        self.log.debug("Run test %s:%s" %(test_status["test_file"],
-                                          test_status["test_class"]))
         os_times = os.times()
         user_time_start = user_time_end = os_times[0]
         kernel_time_start = kernel_time_end = os_times[1]
