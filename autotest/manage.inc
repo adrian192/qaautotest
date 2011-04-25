@@ -337,6 +337,10 @@ function write_suite_to_csv_file($suiteName) {
     $fh = fopen($myFile, "w") or die("Can't open file.");  // Replace old file.
     fwrite ($fh, "file_name,test_class,run_flag,run_as_root,xfail_bug_id\n");
     while ($row = mysql_fetch_assoc($result)) {
+        foreach ($row as &$value) {
+            if ($value == "NULL") {$value = "";}
+        }
+        unset($value);
         $stringData = "{$row['File']},{$row['Class']},{$row['run_flag']},{$row['run_as_root']},{$row['xfail_bug_id']}\n";
         fwrite ($fh, $stringData);
     }
@@ -358,6 +362,10 @@ function write_all_tests_csv() {
     $fh = fopen($myFile, "w") or die("Can't open file.");  // Replace old file.
     fwrite ($fh, "file_name,test_class,run_flag,run_as_root,xfail_bug_id\n");
     while ($row = mysql_fetch_assoc($result)) {
+        foreach ($row as &$value) {
+            if ($value == "NULL") {$value = "";}
+        }
+        unset($value);
         $stringData = "{$row['File']},{$row['Class']},{$row['run_flag']},{$row['run_as_root']},{$row['xfail_bug_id']}\n";
         fwrite ($fh, $stringData);
     }
