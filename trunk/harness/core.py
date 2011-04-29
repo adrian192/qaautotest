@@ -54,16 +54,17 @@ class TestCaseDirectives(object):
 def get_options():
     parser = OptionParser()
     parser.prog = sys.argv[0].split("/")[-1]
-    parser.usage = "%prog -h | <Suite|.csv|File:Class> <-c <config.ini> | -t <test_dir>> [-b <build_num>] \n" + \
+    parser.usage = "%prog -h | <Suite|.csv|File:Class> \n" + \
+                   "<-c <config.ini> | -s <test_source_dir>> [-b <build_num>] \n" + \
                    "[-l <log_dir>] [--level <log_level>]" + \
-                   "[--stop-on-fail] [--run-as-root] " + \
+                   "[--stop-on-fail] [--run-as-root] \n" + \
                    "[--iterations <num_iterations>] [--store]>"
     
     parser.add_option("-c", "--config", action="store", type="string",
                       dest="config", help="The file containing the "
                       "configuration information needed to run the tests.")
-    parser.add_option("-t", "--test-dir", action="store", type="string",
-                      dest="test_dir", help="The path to the directory in "
+    parser.add_option("-s", "--src-dir", action="store", type="string",
+                      dest="test_source_dir", help="The path to the directory in "
                       "which the tests may be found.")
     parser.add_option("-b", "--build", action="store", type="string",
                       dest="build", default="Unspecified", help="The build "
@@ -194,7 +195,7 @@ def get_config():
         elif value == "False":
             params[key] = False
         if isinstance(params[key], str):
-            if (key == "test_dir") or (key == "log_dir") or (key == "config"):
+            if (key == "test_source_dir") or (key == "log_dir") or (key == "config"):
                 params[key] = os.path.abspath(value)
                 
     # Ensure the number of iterations is valid
@@ -223,7 +224,7 @@ def get_config():
     
     # The test directory, i.e. the place where the test
     # code may be found, must be specified.
-    if (params["test_dir"] == None):
+    if (params["test_source_dir"] == None):
         print("The test directory is not specified.  Add the -t option to "
               "your command line or add the mount item to the configuration "
               ".ini file.")
