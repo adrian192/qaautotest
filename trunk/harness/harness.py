@@ -2,7 +2,6 @@
 
 import sys, os, re, time
 import copy
-import random
 import signal
 import traceback
 import threading
@@ -24,11 +23,11 @@ except ImportError:
 
 def main():
     config = profile.get_config()
-    harness = Harness(config["build"], config["log_dir"], config["log_level"])
+    harness = Harness(config["build"], config["log_dir"], config["log_level"], config["threads"])
     harness.initialize_database(os.path.join(os.path.split(os.path.abspath(__file__))[0], "database.ini"))
     harness.add_tests(config["test_source_dir"], config["tests"])
     harness.run_tests(config, config["store_to_database"], config["stop_on_fail"], config["iterations"], config["threads"])
-    failures = harness.print_to_screen()
+    failures = harness.process_results()
     if failures > 0:
         sys.exit(1)
     else:
@@ -36,10 +35,11 @@ def main():
 
 
 class Harness(object):
-    def __init__(self, build="Unspecified", log_dir=None, log_level=logging.DEBUG):
+    def __init__(self, build="Unspecified", log_dir=None,
+                 log_level=logging.DEBUG, num_threads=1):
         self.harness_path = os.getcwd()
         self.build = build
-        self.__setup_logging(log_dir, log_level)
+        self.__setup_logging(log_dir, log_level, num_threads)
         self.dba = None # initialize with self.initialize_datbase()
         self.test_dir = "" # initialize with self.add_tests()
         self.file_to_dir = {} # initialize with self.add_tests()
@@ -49,10 +49,10 @@ class Harness(object):
         self.test_end_time = 0 # recorded by self.run_tests()
         self.test_results = {} # populated by self.run_tests()
     
-    def __setup_logging(self, dir, log_level):
+    def __setup_logging(self, dir, log_level, num_threads):
         # Set up the core logging engine
         logging.basicConfig(level=log_level,
-                    format='%(asctime)s %(name)-24s %(levelname)-8s %(message)s',
+                    format='%(asctime)s (%(thread)d) %(name)-24s %(levelname)-8s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
         self.log = logging.getLogger("Harness")
         logging.addLevelName(100, "REPORT")
@@ -61,8 +61,12 @@ class Harness(object):
         dir = os.path.abspath(dir)
         self.log_file = os.path.join(dir, "harness.log")
         rollover_count = 5
-        log_fmt = logging.Formatter("%(asctime)s %(name)-24s %(levelname)-8s %(message)s",
-                                    "%Y-%m-%d %H:%M:%S")
+        if num_threads > 1:
+            log_fmt = logging.Formatter("%(asctime)s (%(thread)d) %(name)-24s %(levelname)-8s %(message)s",
+                                        "%Y-%m-%d %H:%M:%S")
+        else:
+            log_fmt = logging.Formatter("%(asctime)s %(name)-24s %(levelname)-8s %(message)s",
+                                        "%Y-%m-%d %H:%M:%S")
         if not os.access(dir, os.W_OK):
             self.log.warning("There is no write access to the specified log "
                              "directory %s  No log file will be created." %dir)
@@ -78,6 +82,7 @@ class Harness(object):
             except:
                 self.log.warning("Failed to rollover the log file.  The "
                                  "results will not be recorded.")
+                logging.getLogger("").removeHandler(log_handle)
         self.log.log(100, " ".join(sys.argv))
     
     def initialize_database(self, ini):
@@ -323,21 +328,22 @@ class Harness(object):
                     self.log.info("Executing test iteration %s" %(i + 1))
                 for item in self.test_list:
                     tid = threading.Thread(None, self.__execute_test_case,
-                                           None, (config, item))
+                                           "%s:%s" %(item[0], item[1]),
+                                           (config, item))
                     self.thread_list.append(tid)
                     tid.start()
                     # If we are doing threading, when we hit the maximum
                     # number of threads, wait and let tests complete before
                     # starting more threads.
                     while len(self.thread_list) >= threads:
-                        self.__check_threaded_tests()
+                        self.__check_threaded_tests(stop_on_fail)
                         if item == self.thread_list[-1]:
                             # If the test we just started is the last test, get 
                             # out of this while loop.
                             break
                         time.sleep(1)
                 while len(self.thread_list) > 0:
-                    self.__check_threaded_tests()
+                    self.__check_threaded_tests(stop_on_fail)
                     time.sleep(1)
         
         ######################################################################
@@ -521,11 +527,16 @@ class Harness(object):
             return False
         return True
     
-    def __check_threaded_tests(self):
+    def __check_threaded_tests(self, stop_on_fail):
         """ If we are running multiple thread, check if threads are done.  If
         it is, pop it from the thread_list. """
         for this_thread in self.thread_list:
             if not this_thread.isAlive():
+                if stop_on_fail:
+                        if self.test_results[this_thread.name]["status"] == "FAIL":
+                            self.log.info("%s failed and stop-on-fail is set.  "
+                                          "Exiting." %this_thread.name)
+                            os._exit(1)
                 self.thread_list.pop(self.thread_list.index(this_thread))
 
     def __process_result(self, test_status):
@@ -655,7 +666,7 @@ class Harness(object):
         self.dba.disconnect_db()
         return True
 
-    def print_to_screen(self):
+    def process_results(self):
         """ Take the test results dictionary and print it to screen. """
         if len(self.test_results) == 0:
             self.log.warning("No results recorded in test output.")
@@ -694,17 +705,16 @@ class Harness(object):
             final_output += ("  " + str(class_name) + " ").ljust(74, ".") + value + "\r\n"
         
         final_output += "\r\n"
-        final_output += "Total run:    %s\r\n"% total_count
-        final_output += "Total PASS:   %s\r\n"%pass_count
-        final_output += "Total FAIL:   %s\r\n"%fail_count
-        final_output += "Total SKIP:   %s\r\n"%skip_count
-        final_output += "Total XFAIL:  %s\r\n"%xfail_count
+        final_output += "Total run:    %s\r\n" %total_count
+        final_output += "Total PASS:   %s\r\n" %pass_count
+        final_output += "Total FAIL:   %s\r\n" %fail_count
+        final_output += "Total SKIP:   %s\r\n" %skip_count
+        final_output += "Total XFAIL:  %s\r\n" %xfail_count
         if (total_count != pass_count + fail_count + skip_count + xfail_count):
             final_output += "NOTE: Some tests didn't report results.\r\n\r\n"
         self.log.log(100, final_output)
         return fail_count
-    
-    
+
 def intrupt_handle(sig, b):
     """ Exit if we get a SIGQUIT, SIGABRT, SIGINT, or SIGTERM. """
     print("\nCaught signal: %s.  Exiting." %str(sig))
