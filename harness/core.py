@@ -55,8 +55,8 @@ def get_options():
     parser = OptionParser()
     parser.prog = sys.argv[0].split("/")[-1]
     parser.usage = "%prog -h | <Suite|.csv|File:Class> \n" + \
-                   "<-c <config.ini> | -s <test_source_dir>> [-b <build_num>] \n" + \
-                   "[-l <log_dir>] [--level <log_level>]" + \
+                   "<-c <config.ini> | -s <test_source_dir>> " + \
+                   "[-b <build_num>] \n[-l <log_dir>] [--level <log_level>]" + \
                    "[--stop-on-fail] [--run-as-root] \n" + \
                    "[--iterations <num_iterations>] [--store]>"
     
@@ -64,8 +64,8 @@ def get_options():
                       dest="config", help="The file containing the "
                       "configuration information needed to run the tests.")
     parser.add_option("-s", "--src-dir", action="store", type="string",
-                      dest="test_source_dir", help="The path to the directory in "
-                      "which the tests may be found.")
+                      dest="test_source_dir", help="The path to the directory "
+                      "in which the tests may be found.")
     parser.add_option("-b", "--build", action="store", type="string",
                       dest="build", default="Unspecified", help="The build "
                       "number of the code under test.")
