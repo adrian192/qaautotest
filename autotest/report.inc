@@ -781,7 +781,10 @@ function report_suite_result () {
         echo "<tr><th colspan={$depth} bgcolor={$COLORS['LIGHTBLUE']} align=left>{$test_file}</th></tr>\n";
         foreach ($testItems as $test_class => $testXFID) {
             echo "<tr><th align=left>{$test_class}</th>";
-            if ($testXFID != "") {
+            if ($testXFID == "NULL") {
+                echo "<td></td>";
+            }
+            elseif ($testXFID != "") {
                 echo "<td bgcolor={$COLORS['PORANGE']}>{$testXFID}</td>";
             } else {
                 echo "<td>{$testXFID}</td>";
