@@ -225,7 +225,7 @@ def get_config():
     # The test directory, i.e. the place where the test
     # code may be found, must be specified.
     if (params["test_source_dir"] == None):
-        print("The test directory is not specified.  Add the -t option to "
+        print("The test directory is not specified.  Add the -s option to "
               "your command line or add the mount item to the configuration "
               ".ini file.")
         sys.exit(1)
